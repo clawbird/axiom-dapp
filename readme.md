@@ -54,7 +54,20 @@ This particular script was used to generate the [test data](https://github.com/a
 
 ## Docker Setup
 
-* Run the following.
+### Run Light Client
+
+* Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine using this PR https://github.com/a16z/helios/pull/262
+  ```bash
+  git clone https://github.com/ltfschoen/helios
+  cd helios
+  git fetch origin docker:docker
+  git checkout docker
+  ```
+* Follow the instructions "Running Helios CLI using Docker" to run it
+
+### Run Axiom
+
+* Run the following to start Axiom in a separate Docker container
   * Note: Optionally remove installing Rust in the Dockerfile.
   * Note: If you exit the Docker container, re-enter it with `docker exec -it axiom /bin/bash`
     ```bash
