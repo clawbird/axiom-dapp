@@ -2,29 +2,24 @@ import { Axiom, AxiomConfig } from "@axiom-crypto/core";
 import { ethers } from "ethers";
 import { Constants } from "./shared/constants";
 import { abi as AxiomV1QueryAbi } from "./lib/abi/AxiomV1Query.json";
-import MetaMaskSDK from "@metamask/sdk";
 import dotenv from "dotenv";
 dotenv.config();
 
 let providerUri = process.env.PROVIDER_URI as string;
 if (!providerUri || providerUri === "") {
+  // Helios light client
   providerUri = "http://127.0.0.1:8545";
 }
+let apiKey = process.env.PROVIDER_API_KEY_GOERLI as string;
 const config: AxiomConfig = {
+  apiKey,
   providerUri,
   version: "v1",
   chainId: 5, // Goerli; defaults to 1 (Ethereum Mainnet)
   mock: true, // builds proofs without utilizing actual Prover resources
 };
 const ax = new Axiom(config);
-
-// This is only for MetaMask integration, if you don't want to store the Goerli private key in an environmental variable
-const sdk = new MetaMaskSDK({
-  dappMetadata: {
-    name: "Axiom",
-  },
-});
-
+console.log('Axiom instance: ', ax);
 // here is an example query to show you how QueryBuilder works
 async function newQuery(blockNumber: number) {
   const UNI_V2_ADDR = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
@@ -67,25 +62,16 @@ async function main() {
   // This must be set to a number that hasn't been queried yet (or any values that would calculate
   // a different keccakQueryResposne) since the AxiomV1Query contract saves the keccakQueryResponses
   // in a mapping and the call will fail if the keccakQueryResponse already exists in that mapping.
-  let currentQueryBlock = 9_142_026;
+  // let currentQueryBlock = 9_142_026;
 
   let signer: ethers.Signer;
 
-  if (!process.env.PRIVATE_KEY) {
-    const ethereum = sdk.getProvider();
-    await ethereum?.request({ method: "eth_requestAccounts", params: [] });
-    const provider = new ethers.BrowserProvider(
-      ethereum as ethers.Eip1193Provider
-    );
-    signer = await provider.getSigner();
-  } else {
-    const provider = new ethers.JsonRpcProvider(providerUri);
-    const wallet = new ethers.Wallet(
-      process.env.PRIVATE_KEY as string,
-      provider
-    );
-    signer = wallet;
-  }
+  const provider = new ethers.JsonRpcProvider(providerUri);
+  const wallet = new ethers.Wallet(
+    process.env.PRIVATE_KEY as string,
+    provider
+  );
+  signer = wallet;
 
   let signerAddress = await signer.getAddress();
 
@@ -94,6 +80,14 @@ async function main() {
     AxiomV1QueryAbi,
     signer
   );
+
+  // Latest finalized block number from provider
+  let latestFinalizedBlock = await provider.getBlock("finalized");
+  if (latestFinalizedBlock == null) {
+    return;
+  }
+  console.log("latestFinalizedBlock", latestFinalizedBlock.number);
+  let currentQueryBlock = latestFinalizedBlock.number;
 
   const { keccakQueryResponse, query } = await newQuery(currentQueryBlock);
 
@@ -111,8 +105,6 @@ async function main() {
 
   const res = await tx.wait();
   console.log("res", res);
-
-  sdk.disconnect();
 }
 
 main();
