@@ -82,6 +82,7 @@ async function main() {
   );
 
   // Latest finalized block number from provider
+  // https://ethereum.stackexchange.com/a/153103/9680
   let latestFinalizedBlock = await provider.getBlock("finalized");
   if (latestFinalizedBlock == null) {
     return;
