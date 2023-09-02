@@ -18,7 +18,9 @@ ENV RUSTUP_HOME=$HOME/rustup \
 RUN set -e && \
   apt-get -y update --fix-missing && \
   apt-get -y upgrade && \
-  apt-get install -y build-essential pkg-config libfontconfig-dev && \
+  apt-get install -y build-essential pkg-config && \
+  # Helios-specific requirement
+  apt-get install -y libfontconfig-dev && \
   apt-get install -y git curl wget jq lsof unzip vim && \
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
   rustup component add rust-src rustfmt clippy && \
