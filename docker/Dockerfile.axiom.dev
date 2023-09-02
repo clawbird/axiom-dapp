@@ -19,24 +19,24 @@ ARG NODE_MAJOR="20"
 ARG RUST_NIGHTLY="2022-10-28"
 
 ENV RUSTUP_HOME=$HOME/rustup \
-    CARGO_HOME=$HOME/cargo \
-    PATH=$HOME/cargo/bin:$PATH:${PATH_MAIN}/node_modules/.bin:$PATH \
-    DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8 \
-    PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI} \
-    PROVIDER_URI=${PROVIDER_URI} \
-    PRIVATE_KEY=${PRIVATE_KEY} \
-    NODE_ENV=${NODE_ENV} \
-    PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS} \
-    HOST=${HOST}
+  CARGO_HOME=$HOME/cargo \
+  PATH=$HOME/cargo/bin:$PATH:${PATH_MAIN}/node_modules/.bin:$PATH \
+  DEBIAN_FRONTEND=noninteractive \
+  LANG=C.UTF-8 \
+  PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI} \
+  PROVIDER_URI=${PROVIDER_URI} \
+  PRIVATE_KEY=${PRIVATE_KEY} \
+  NODE_ENV=${NODE_ENV} \
+  PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS} \
+  HOST=${HOST}
 
 # non-root user. `cat /etc/passwd`
 RUN useradd -m -u 1001 -U -s /bin/sh -d ${PATH_PROJECT} axiom-user && \
   # light client database available using volumne
   mkdir -p /data /root/.helios/data && \
-	chown -R axiom-user:axiom-user /data && \
-	ln -s /data /root/.helios/data && \
-	chown -R axiom-user:axiom-user ${PATH_PROJECT} && \
+  chown -R axiom-user:axiom-user /data && \
+  ln -s /data /root/.helios/data && \
+  chown -R axiom-user:axiom-user ${PATH_PROJECT} && \
   chgrp axiom-user ${PATH_PROJECT} && \
   chgrp -R axiom-user ${PATH_PROJECT} && \
   chmod 770 ${PATH_PROJECT} && \
@@ -53,11 +53,11 @@ RUN set -e && \
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
   rustup component add rust-src rustfmt clippy && \
   rustup target add wasm32-unknown-unknown && \
-	rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
-	rustup default "nightly-${RUST_NIGHTLY}" && \
-	rustup override set "nightly-${RUST_NIGHTLY}" && \
-	# install wasm target into nightly toolchain
-	rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
+  rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
+  rustup default "nightly-${RUST_NIGHTLY}" && \
+  rustup override set "nightly-${RUST_NIGHTLY}" && \
+  # install wasm target into nightly toolchain
+  rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
   . $HOME/cargo/env && \
   rustc --version && \
   rustup show && \
@@ -65,29 +65,29 @@ RUN set -e && \
   exec bash && \
   # Install LTS node
   # Download and import the Nodesource GPG key
-apt-get install -y ca-certificates curl gnupg && \
-mkdir -p /etc/apt/keyrings && \
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-# Create deb repository
-echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-# Run Update and Install
-apt-get update && \
-apt-get install -y nodejs && \
-cd ${PATH_MAIN} && \
-echo -e "Installing ${PATH_MAIN} dependencies..." && \
-# Install pnpm
-npm install -g pnpm && \
-node --version && \
-SHELL=bash pnpm setup && \
-. $HOME/.bashrc && \
-pnpm install && \
-# https://github.com/pnpm/pnpm/issues/4997
-rm -rf $HOME/axiom/.pnpm-store/v3/files && \
-chown -R axiom-user:axiom-user ${PATH_MAIN}/node_modules && \
-chgrp axiom-user ${PATH_MAIN}/node_modules && \
-chgrp -R axiom-user ${PATH_MAIN}/node_modules && \
-chmod 770 ${PATH_MAIN}/node_modules && \
-chmod -R 770 ${PATH_MAIN}/node_modules
+  apt-get install -y ca-certificates curl gnupg && \
+  mkdir -p /etc/apt/keyrings && \
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+  # Create deb repository
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+  # Run Update and Install
+  apt-get update && \
+  apt-get install -y nodejs && \
+  cd ${PATH_MAIN} && \
+  echo -e "Installing ${PATH_MAIN} dependencies..." && \
+  # Install pnpm
+  npm install -g pnpm && \
+  node --version && \
+  SHELL=bash pnpm setup && \
+  . $HOME/.bashrc && \
+  pnpm install && \
+  # https://github.com/pnpm/pnpm/issues/4997
+  rm -rf $HOME/axiom/.pnpm-store/v3/files && \
+  chown -R axiom-user:axiom-user ${PATH_MAIN}/node_modules && \
+  chgrp axiom-user ${PATH_MAIN}/node_modules && \
+  chgrp -R axiom-user ${PATH_MAIN}/node_modules && \
+  chmod 770 ${PATH_MAIN}/node_modules && \
+  chmod -R 770 ${PATH_MAIN}/node_modules
 
 EXPOSE 8545
 

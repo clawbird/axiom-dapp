@@ -11,9 +11,9 @@ WORKDIR ${PATH_MAIN}
 ARG RUST_NIGHTLY="2023-07-31"
 
 ENV RUSTUP_HOME=$HOME/rustup \
-    CARGO_HOME=$HOME/cargo \
-    PATH=$HOME/cargo/bin:$PATH \
-    HOST=${HOST}
+  CARGO_HOME=$HOME/cargo \
+  PATH=$HOME/cargo/bin:$PATH \
+  HOST=${HOST}
 
 RUN set -e && \
   apt-get -y update --fix-missing && \
@@ -26,8 +26,8 @@ RUN set -e && \
   rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
   rustup default "nightly-${RUST_NIGHTLY}" && \
   rustup override set "nightly-${RUST_NIGHTLY}" && \
-	# install wasm target into nightly toolchain
-	rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
+  # install wasm target into nightly toolchain
+  rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
   . $HOME/cargo/env && \
   rustc --version && \
   rustup show && \

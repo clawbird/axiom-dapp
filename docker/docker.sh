@@ -93,8 +93,8 @@ setup_env $PATH_MAIN
 PUBLIC_IP_ADDRESS_FALLBACK=$(wget http://ipecho.net/plain -O - -q ; echo)
 echo ${PUBLIC_IP_ADDRESS:=$PUBLIC_IP_ADDRESS_FALLBACK}
 if [ "$NODE_ENV" != "development" ]; then
-    printf "\nError: NODE_ENV should be set to development in .env\n";
-    kill "$PPID"; exit 1;
+  printf "\nError: NODE_ENV should be set to development in .env\n";
+  kill "$PPID"; exit 1;
 fi
 
 NAME_MAIN_FALLBACK=axiom-quickstart
@@ -110,9 +110,9 @@ printf "\n*** Please wait... \n***"
 
 DOCKER_BUILDKIT=0 docker compose -f docker-compose-dev.yml up --build -d
 if [ $? -ne 0 ]; then
-    kill "$PPID"; exit 1;
+  kill "$PPID"; exit 1;
 fi
 printf "\n*** Finished building Docker container.\n"
 if [ "$PUBLIC_IP_ADDRESS" != "" ]; then
-    printf "\n*** Public IP address: ${PUBLIC_IP_ADDRESS}\n***\n";
+  printf "\n*** Public IP address: ${PUBLIC_IP_ADDRESS}\n***\n";
 fi
