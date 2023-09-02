@@ -1,0 +1,48 @@
+FROM docker.io/library/ubuntu:23.04
+
+ARG HOST=${HOST}
+
+ARG PATH_PROJECT=/eip-x
+ARG PATH_MAIN=/${PATH_PROJECT}/helios
+
+ENV HOME /root
+WORKDIR ${PATH_MAIN}
+
+ARG RUST_NIGHTLY="2023-07-31"
+
+ENV RUSTUP_HOME=$HOME/rustup \
+    CARGO_HOME=$HOME/cargo \
+    PATH=$HOME/cargo/bin:$PATH \
+    HOST=${HOST}
+
+RUN set -e && \
+  apt-get -y update --fix-missing && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential pkg-config libfontconfig-dev && \
+  apt-get install -y git curl wget jq lsof unzip vim && \
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
+  rustup component add rust-src rustfmt clippy && \
+  rustup target add wasm32-unknown-unknown && \
+  rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
+  rustup default "nightly-${RUST_NIGHTLY}" && \
+  rustup override set "nightly-${RUST_NIGHTLY}" && \
+	# install wasm target into nightly toolchain
+	rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
+  . $HOME/cargo/env && \
+  rustc --version && \
+  rustup show && \
+  cd ${PATH_PROJECT} && \
+  git clone https://github.com/ltfschoen/helios && \
+  cd helios && \
+  git fetch origin docker:docker && \
+  git checkout docker && \
+  # remove Cargo.lock and add `libfontconfig-dev` otherwise get the following error:
+  # error: failed to run custom build command for `yeslogic-fontconfig-sys v3.2.0`
+  test -f ${PATH_MAIN}/Cargo.lock && rm ${PATH_MAIN}/Cargo.lock && \
+  cargo build && \
+  cp .env.example .env && \
+  . ${PATH_MAIN}/.env
+
+EXPOSE 8545 9001 9002
+
+CMD tail -f /dev/null

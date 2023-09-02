@@ -31,3 +31,5 @@ yarn-error.log*
 
 .pnpm-store/
 pnpm-lock.yaml
+
+data/

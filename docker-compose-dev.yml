@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  axiom:
+    container_name: ${NAME_MAIN}-dev
+    restart: always
+    build:
+      context: "."
+      dockerfile: ./docker/Dockerfile.axiom.dev
+      args:
+        - NAME_MAIN=${NAME_MAIN}
+        - NODE_ENV=${NODE_ENV}
+        - PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI}
+        - PROVIDER_URI=${PROVIDER_URI}
+        - PRIVATE_KEY=${PRIVATE_KEY}
+        - PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS}
+        - HOST=${HOST}
+    volumes:
+      - ./:/${NAME_MAIN}:delegated
+      - ignore:/${NAME_MAIN}/node_modules
+    # https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+    # use this to avoid connection to 127.0.0.1:8545 being refused
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # ports:
+    #   - "X:X"
+    env_file:
+      - ./.env
+    depends_on:
+      - helios
+    links:
+      - helios
+  helios:
+    container_name: helios-dev
+    restart: always
+    build:
+      context: "."
+      dockerfile: ./docker/Dockerfile.helios.dev
+      args:
+        - HOST=${HOST}
+    environment:
+      HOST: ${HOST}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    shm_size: 1gb
+    ports:
+      - "8545:8545"
+      - "9001:9001"
+      - "9002:9002"
+    # https://github.com/docker/for-mac/issues/1996#issuecomment-408336035
+    volumes:
+      - /var/lib/docker/containers:/mnt/log/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # database
+      - ./data:/root/.helios/data/
+
+volumes:
+  ignore:

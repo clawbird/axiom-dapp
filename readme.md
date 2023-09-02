@@ -54,26 +54,23 @@ This particular script was used to generate the [test data](https://github.com/a
 
 ## Docker Setup
 
-### Run Light Client
+* Install and run [Docker](https://www.docker.com/)
 
-* Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine using this PR https://github.com/a16z/helios/pull/262
-  ```bash
-  git clone https://github.com/ltfschoen/helios
-  cd helios
-  git fetch origin docker:docker
-  git checkout docker
-  ```
-* Follow the instructions "Running Helios CLI using Docker" to run it
+### Run Axiom <a id="run-axiom"></a>
 
-### Run Axiom
-
+* Configure .env files
 * Run the following to start Axiom in a separate Docker container
-  * Note: Optionally remove installing Rust in the Dockerfile.
   * Note: If you exit the Docker container, re-enter it with `docker exec -it axiom /bin/bash`
     ```bash
-    ./docker/docker.sh
+    time ./docker/docker.sh
     ```
-* Run the following inside the Docker container:
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root axiom-quickstart-dev /bin/bash`
+  * View logs
+    ```bash
+    docker logs -f axiom-quickstart-dev
+    ```
+* Follow steps to [Run Light Client (Helios)](#run-light-client)
+* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-quickstart -it axiom-quickstart-dev pnpm start`
   ```bash
   pnpm start
   ```
@@ -87,4 +84,98 @@ This particular script was used to generate the [test data](https://github.com/a
 * View response
   ```
   {"keccakResponses":{"keccakBlockResponse":"...","keccakAccountResponse":"...","keccakStorageResponse":"..."},"storageResponses":[{"blockNumber":"0x92117a","addr":"0x8eb3a522cab99ed365e450dad696357de8ab7e9d","slot":"0x0","value":"0x0000000000000000000000000000000000000000000000000000000000000001","leafIdx":"0x06","proof":["...","...","...","...","...","..."]},{"blockNumber":"0x92117b","addr":"0x8eb3a522cab99ed365e450dad696357de8ab7e9d","slot":"0x01","value":"0x0000000000000000000000000000000000000000000000000000000000000000","leafIdx":"0x07","proof":["...","...","...","...","...","..."]}]}
+  ```
+
+### Run Light Client (Helios) <a id="run-light-client"></a>
+
+* Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine using this PR https://github.com/a16z/helios/pull/262
+* To enter the Light Client Docker container run `docker exec -it --user=root helios-dev /bin/bash`
+* If necessary, configure /.env files in /eip-x/helios with the:
+  * Add API Keys that you obtain for Mainnet and/or Goerli
+  * Checkpoints for Mainnet and/or Goerli
+  * Chain DB path for Mainnet and/or Goerli
+* Set the environment variables
+  ```sh
+  docker exec -w /eip-x/helios -it helios-dev sh -c ". /eip-x/helios/.env"
+  ```
+* Follow the instructions "Running Helios CLI using Docker" at https://github.com/a16z/helios/pull/262/files to run it
+* Run a Helios Light Client node on Goerli by running the following outside the Docker container
+```bash
+docker exec -w /eip-x/helios -it helios-dev cargo run -- \
+  --network goerli \
+  --consensus-rpc http://testing.prater.beacon-api.nimbus.team \
+  --execution-rpc https://ethereum-goerli-rpc.allthatnode.com \
+  --checkpoint 0x3754cde3eabb1815c15d78ef27a279d4abbd3ece0f720535acd5ca80b3a16f91
+```
+
+> Replace the checkpoint if necessary by following the instructions "Running Helios CLI using Docker" at https://github.com/a16z/helios/pull/262/files
+> If you get error `ERROR consensus::consensus] sync failed: could not fetch bootstrap rpc error on method: bootstrap, message: error decoding response body` then you need to get and use a more recent checkpoint value
+> To kill a process on port 8545 from outside the Docker container run the following to get the PID, then run `docker exec -w /eip-x/helios -it helios-dev kill -9 <PID>`, replacing <PID> with the PID number shown.
+```bash
+docker exec -w /eip-x/helios -it helios-dev lsof -ti tcp:8545 | { read -d "" x; echo "$x" }
+```
+
+* Run a Helios Light Client node on Mainnet
+```bash
+docker exec -w /eip-x/helios -it helios-dev cargo run -- \
+  --network mainnet \
+  --consensus-rpc https://www.lightclientdata.org \
+  --execution-rpc https://ethereum-mainnet-rpc.allthatnode.com \
+  --checkpoint 0xbff6f8b24e15ad4420b34a56ded02702694d1c8141e05a75a5afbff8ef2ad71b
+```
+
+### Docker Troubleshooting
+
+* Kill a port `PORT` (e.g. `8545`)
+  ```bash
+  PORT=8545
+  kill -9 $(lsof -ti tcp:$PORT)
+  ```
+* Restart a Docker container name (e.g. `axiom`) that is shown as `Exited` when you run `docker ps -a`
+  ```bash
+  CONTAINER_NAME=axiom
+  docker restart $CONTAINER_NAME
+  ```
+* If you get error `error from daemon in stream: Error grabbing logs: invalid character '\x00' looking for beginning of value` when viewing Docker logs then:
+  * Add `ENV LANG=C.UTF-8` to the Dockerfile. See https://github.com/docker/for-linux/issues/140#issuecomment-571519609
+  * Add the following to the docker-compose-dev.yml file
+    ```bash
+    volumes:
+    - /var/lib/docker/containers:/mnt/log/containers:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    ```
+* If you get error `ENOSPC: no space left on device` then remove exited containers and dangling images:
+  ```bash
+  docker rm $(docker ps -q -f 'status=exited')
+  docker rmi $(docker images -q -f "dangling=true")
+  ```
+* To find the path to a Docker container logs
+  ```
+  CONTAINER_NAME=axiom
+  docker inspect $CONTAINER_NAME | grep log
+  ```
+* List Docker containers
+  ```bash
+  docker ps -a
+  ```
+* List Docker images
+  ```bash
+  docker images -a
+  ```
+* Enter Docker container shell
+  ```bash
+  CONTAINER_NAME=axiom
+  docker exec -it $CONTAINER_NAME /bin/bash
+  ```
+* View Docker container logs
+  ```bash
+  docker logs -f $CONTAINER_ID
+  ```
+* Remove Docker container
+  ```bash
+  docker stop $CONTAINER_NAME; docker rm $CONTAINER_NAME;
+  ```
+* Remove Docker image
+  ```bash
+  docker rmi $IMAGE_ID
   ```
