@@ -1,10 +1,24 @@
 # Axiom Quickstart
 
-## Introduction
+# Table of Contents
+
+* [Introduction](#introduction)
+* [Setup](#setup)
+* [Setup (using Docker)](#docker-setup)
+  * [Run Axiom](#run-axiom)
+  * [Run Light Client (Helios)](#run-light-client)
+  * [Run Portal Network (Trin)](#run-trin)
+  * [Docker Troubleshooting](#docker-troubleshooting)
+
+## Introduction <a id="introduction"></a>
 
 This starter repo is a guide to get you started making your first [Axiom](https://axiom.xyz) query as quickly as possible using the [Axiom SDK](https://github.com/axiom-crypto/axiom-sdk).  To learn more about Axiom, check out the developer docs at [docs.axiom.xyz](https://docs.axiom.xyz) or join our developer [Telegram](https://t.me/axiom_discuss).
 
-## Setup
+Follow the [Docker Setup](#docker_setup) instructions to conveniently set up Axiom, Light Client (Helios), and Portal Network (Trin) in separate Docker containers.
+
+The original [Setup](#setup) intructions are to be incorporated into the [Docker Setup](#docker_setup) instructions and then deprecated.
+
+## Setup <a id="setup"></a>
 
 Install `npm` or `yarn` or `pnpm`:
 
@@ -52,15 +66,15 @@ pnpm getWitness
 
 This particular script was used to generate the [test data](https://github.com/axiom-crypto/axiom-apps/blob/main/uniswap-v3-twap/test/data/input.json) for the [Uniswap V3 TWAP demo app](https://demo.axiom.xyz/token-price-v3) smart contract.
 
-## Docker Setup
+## Setup (using Docker) <a id="docker-setup"></a>
 
 * Install and run [Docker](https://www.docker.com/)
+* Follow [Run Axiom](#run-axiom) instructions to run Axiom, Light Client (Helios), and Portal Network (Trin)
 
 ### Run Axiom <a id="run-axiom"></a>
 
 * Configure .env files
-* Run the following to start Axiom in a separate Docker container
-  * Note: If you exit the Docker container, re-enter it with `docker exec -it axiom /bin/bash`
+* Run the following to build Axiom, Helios, and Portal Network in separate Docker containers
     ```bash
     time ./docker/docker.sh
     ```
@@ -88,8 +102,8 @@ This particular script was used to generate the [test data](https://github.com/a
 
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
-* Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine using this PR https://github.com/a16z/helios/pull/262
-* To enter the Light Client Docker container run `docker exec -it --user=root helios-dev /bin/bash`
+* Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine, based on this PR https://github.com/a16z/helios/pull/262
+* Enter the Light Client Docker container run `docker exec -it --user=root helios-dev /bin/bash`
 * If necessary, configure /.env files in /eip-x/helios with the:
   * Add API Keys that you obtain for Mainnet and/or Goerli
   * Checkpoints for Mainnet and/or Goerli
@@ -124,7 +138,35 @@ docker exec -w /eip-x/helios -it helios-dev cargo run -- \
   --checkpoint 0xbff6f8b24e15ad4420b34a56ded02702694d1c8141e05a75a5afbff8ef2ad71b
 ```
 
-### Docker Troubleshooting
+### Run Portal Network (Trin) <a id="run-trin"></a>
+
+* Run the shell script in [Run Axiom](#run-axiom) to build Axiom, Helios, and Portal Network in separate Docker containers
+
+* Enter the Trin Docker container run:
+```bash
+docker exec -it --user=root trin-dev /bin/bash
+```
+
+* Run Trin
+  ```bash
+  cargo run -- --help
+
+  RUST_LOG=INFO cargo run -- \
+    --web3-http-address http://127.0.0.1:8547 \
+    --web3-transport http \
+    --discovery-port 9000 \
+    --external-address 127.0.0.1:8001
+    --bootnodes default \
+    --mb 200 \
+    --no-stun
+  ```
+  * Note that `--mb` is how much storage the node database may use
+  * Use `--ephemeral` to use temporary database
+  * If you use `--web3-transport ipc` then it uses default path to json-rpc endpoint `/tmp/trin-jsonrpc.ipc` for `--web3-ipc-path <WEB3_IPC_PATH>`
+
+* Refer to ./book/src/developers and ./book/src/users/installation folders in the Trin repository for help
+
+### Docker Troubleshooting <a id="docker-troubleshooting"></a>
 
 * Kill a port `PORT` (e.g. `8545`)
   ```bash
@@ -144,11 +186,25 @@ docker exec -w /eip-x/helios -it helios-dev cargo run -- \
     - /var/lib/docker/containers:/mnt/log/containers:ro
     - /var/run/docker.sock:/var/run/docker.sock:ro
     ```
-* If you get error `ENOSPC: no space left on device` then remove exited containers and dangling images:
-  ```bash
-  docker rm $(docker ps -q -f 'status=exited')
-  docker rmi $(docker images -q -f "dangling=true")
-  ```
+* If you get error `ENOSPC: no space left on device` or `No space left on device` or `LLVM ERROR: IO failure on output stream: No space left on device` or `You don't have enough free space in /var/cache/apt/archives/` then:
+  * Update Docker Settings. If using Docker for Mac, go to Settings > Resources, and increase CPUs, Memory, Swap, and Virtual disk limit. Leave some space for host machine to use. See https://stackoverflow.com/questions/44533319/how-to-assign-more-memory-to-docker-container
+  * Try remove exited containers and dangling images:
+    ```bash
+    docker container prune
+    docker system prune -af
+    docker rm $(docker ps -q -f 'status=exited')
+    docker rmi $(docker images -q -f "dangling=true")
+    ```
+  * Alternatively update docker-compose.yaml to include `shm_size: 1gb` for `service` (when running) and `build` (when building)
+* If you get error `error: linking with `cc` failed: exit status: 1 note: LC_ALL="C" collect2: fatal error: ld terminated with signal 9 error: could not compile trin (bin "purge_db") due to previous error` when running `cargo build --workspace` with Trin
+  * TODO - try running `cargo build -p trin` instead
+* If you get error `fatal: detected dubious ownership in repository`:
+  * Try removing creation of user `trin-user` in the ./docker/Dockerfile.trin.dev
+* if you get error `fatal: refusing to fetch into branch 'refs/heads/master' checked out at '/eip-x/trin'` on Linux
+  * Caused by `git fetch origin master:master` when you are already in that branch `master` so try creating a different branch that you are going to work on
+* If you are low on space it may be due to browser tabs
+  * Go to Chrome Settings (dotted icon) > More Tools > Task Manager
+    * Close tabs using large memory
 * To find the path to a Docker container logs
   ```
   CONTAINER_NAME=axiom

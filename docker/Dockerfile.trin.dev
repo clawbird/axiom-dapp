@@ -1,0 +1,75 @@
+FROM docker.io/library/ubuntu:23.04
+
+ARG HOST=${HOST}
+
+ARG PATH_PROJECT=/eip-x
+ARG PATH_MAIN=/${PATH_PROJECT}/trin
+
+ENV HOME /root
+WORKDIR ${PATH_MAIN}
+
+ARG RUST_NIGHTLY="2023-08-03"
+ARG BRANCH_NAME=docker
+ARG REPO_URL="https://github.com/ltfschoen/trin.git"
+
+ENV RUSTUP_HOME=$HOME/rustup \
+  CARGO_HOME=$HOME/cargo \
+  PATH=$HOME/cargo/bin:$PATH \
+  # error/warn/info/debug/trace
+  RUST_LOG=DEBUG \
+  TRIN_DATA_PATH=$HOME/.local/share/trin \
+  HOST=${HOST}
+
+RUN set -e && \
+  mkdir -p /data $TRIN_DATA_PATH && \
+  ln -s /data $TRIN_DATA_PATH && \
+  # The following code is commented out as it
+  # causes error `fatal: detected dubious ownership in repository`
+  # # non-root user. `cat /etc/passwd`
+  # useradd -m -u 1001 -U -s /bin/sh -d ${PATH_PROJECT} trin-user && \
+  # # trin database available using volumne
+  # mkdir -p /data $TRIN_DATA_PATH && \
+  # chown -R trin-user:trin-user /data && \
+  # ln -s /data $TRIN_DATA_PATH && \
+  # chown -R trin-user:trin-user ${PATH_PROJECT} && \
+  # chgrp trin-user ${PATH_PROJECT} && \
+  # chgrp -R trin-user ${PATH_PROJECT} && \
+  # chmod 770 ${PATH_PROJECT} && \
+  # chmod -R 770 ${PATH_PROJECT} && \
+  apt-get -y update --fix-missing && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential pkg-config && \
+  # Helios-specific requirement
+  apt-get install -y libfontconfig-dev && \
+  # Trin-specific requirement
+  apt-get install -y libssl-dev librocksdb-dev libclang-dev clang libcurl4 && \
+  apt-get install -y git curl wget jq lsof unzip vim && \
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
+  rustup component add rust-src rustfmt clippy && \
+  rustup target add wasm32-unknown-unknown && \
+  rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
+  rustup default "nightly-${RUST_NIGHTLY}" && \
+  rustup override set "nightly-${RUST_NIGHTLY}" && \
+  # install wasm target into nightly toolchain
+  rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
+  . $HOME/cargo/env && \
+  rustc --version && \
+  rustup show && \
+  cd ${PATH_PROJECT} && \
+  git clone ${REPO_URL} && \
+  cd trin && \
+  git fetch origin ${BRANCH_NAME}:${BRANCH_NAME} && \
+  git checkout ${BRANCH_NAME} && \
+  # `cargo build --workspace` will build every workspace in the repo,
+  # whereas `cargo build -p trin` will only build workspaces required to run trin
+  cargo build -p trin
+  # cp .env.example .env && \
+  # . ${PATH_MAIN}/.env
+
+EXPOSE 3000 8546-8547 8000-8100 9000 9009 9090 9100 9101 22
+# do not expose 8545 to prevent conflict
+EXPOSE 8577
+
+# USER trin-user
+VOLUME ["/data"]
+CMD tail -f /dev/null

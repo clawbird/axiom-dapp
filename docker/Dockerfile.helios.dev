@@ -9,6 +9,8 @@ ENV HOME /root
 WORKDIR ${PATH_MAIN}
 
 ARG RUST_NIGHTLY="2023-07-31"
+ARG BRANCH_NAME=docker
+ARG REPO_URL="https://github.com/ltfschoen/helios.git"
 
 ENV RUSTUP_HOME=$HOME/rustup \
   CARGO_HOME=$HOME/cargo \
@@ -34,10 +36,10 @@ RUN set -e && \
   rustc --version && \
   rustup show && \
   cd ${PATH_PROJECT} && \
-  git clone https://github.com/ltfschoen/helios && \
+  git clone ${REPO_URL} && \
   cd helios && \
-  git fetch origin docker:docker && \
-  git checkout docker && \
+  git fetch origin ${BRANCH_NAME}:${BRANCH_NAME} && \
+  git checkout ${BRANCH_NAME} && \
   # remove Cargo.lock and add `libfontconfig-dev` otherwise get the following error:
   # error: failed to run custom build command for `yeslogic-fontconfig-sys v3.2.0`
   test -f ${PATH_MAIN}/Cargo.lock && rm ${PATH_MAIN}/Cargo.lock && \
