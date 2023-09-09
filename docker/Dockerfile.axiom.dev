@@ -9,7 +9,7 @@ ARG PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS}
 ARG HOST=${HOST}
 
 ARG PATH_PROJECT=/eip-x
-ARG PATH_MAIN=/${PATH_PROJECT}/${NAME_MAIN}
+ARG PATH_MAIN=${PATH_PROJECT}/${NAME_MAIN}
 
 ENV HOME /root
 WORKDIR ${PATH_MAIN}
@@ -43,6 +43,7 @@ RUN useradd -m -u 1001 -U -s /bin/sh -d ${PATH_PROJECT} axiom-user && \
   chmod -R 770 ${PATH_PROJECT}
 
 COPY --chown=axiom-user:axiom-user . ${PATH_MAIN}
+COPY ./shopt ${PATH_PROJECT}/shopt
 
 RUN set -e && \
   apt-get -y update --fix-missing && \
@@ -62,22 +63,25 @@ RUN set -e && \
   rustc --version && \
   rustup show && \
   # Node.js and PNPM
-  exec bash && \
+  # exec bash && \
   # Install LTS node
+  cd ${PATH_MAIN} && \
   # Download and import the Nodesource GPG key
   apt-get install -y ca-certificates curl gnupg && \
   mkdir -p /etc/apt/keyrings && \
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
   # Create deb repository
-  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
   # Run Update and Install
   apt-get update && \
   apt-get install -y nodejs && \
-  cd ${PATH_MAIN} && \
   echo -e "Installing ${PATH_MAIN} dependencies..." && \
+  cp ${PATH_PROJECT}/shopt /usr/local/bin/shopt && \
+  ln -s /usr/local/bin/shopt /usr/bin/shopt && \
   # Install pnpm
   npm install -g pnpm && \
   node --version && \
+  . $HOME/.bashrc && \
   SHELL=bash pnpm setup && \
   . $HOME/.bashrc && \
   pnpm install && \

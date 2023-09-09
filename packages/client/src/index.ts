@@ -59,6 +59,7 @@ async function newQuery(blockNumber: number) {
 }
 
 async function main() {
+  console.log("test1", process.env.PRIVATE_KEY);
   // This must be set to a number that hasn't been queried yet (or any values that would calculate
   // a different keccakQueryResposne) since the AxiomV1Query contract saves the keccakQueryResponses
   // in a mapping and the call will fail if the keccakQueryResponse already exists in that mapping.

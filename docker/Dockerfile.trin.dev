@@ -3,14 +3,14 @@ FROM docker.io/library/ubuntu:23.04
 ARG HOST=${HOST}
 
 ARG PATH_PROJECT=/eip-x
-ARG PATH_MAIN=/${PATH_PROJECT}/trin
+ARG PATH_MAIN=${PATH_PROJECT}/trin
 
 ENV HOME /root
 WORKDIR ${PATH_MAIN}
 
 ARG RUST_NIGHTLY="2023-08-03"
-ARG BRANCH_NAME=docker
-ARG REPO_URL="https://github.com/ltfschoen/trin.git"
+ARG BRANCH_NAME=eip-x
+ARG REPO_URL="https://github.com/clawbird/trin.git"
 
 ENV RUSTUP_HOME=$HOME/rustup \
   CARGO_HOME=$HOME/cargo \

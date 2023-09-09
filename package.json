@@ -1,24 +1,26 @@
 {
-  "name": "axiom-quickstart",
-  "version": "0.1.0",
-  "description": "",
+  "name": "eip-x",
+  "version": "1.0.1",
+  "private": true,
+  "description": "eip-x",
   "main": "index.js",
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "getWitness": "ts-node src/getWitness.ts"
+  "workspaces": [
+    "packages/**"
+  ],
+  "engines": {
+    "node": ">16.10",
+    "pnpm": ">=6"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@axiom-crypto/core": "^0.3.6",
-    "dotenv": "^16.1.3",
-    "ethers": "^6.4.0",
-    "ts-node": "^10.9.1"
+  "scripts": {
+    "setup": "pnpm install",
+    "start-server": "npm run start -w packages/server",
+    "getWitness-server": "npm run getWitness -w packages/server",
+    "syncpack": "syncpack list-mismatches",
+    "update-deps": "pnpm update -irL",
+    "test": "pnpm test -r"
   },
   "devDependencies": {
-    "@types/node": "^20.2.5",
-    "tslib": "^2.5.2",
-    "typescript": "^5.0.4"
+    "esm": "^3.2.25",
+    "syncpack": "^11.2.1"
   }
 }

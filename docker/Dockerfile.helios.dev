@@ -3,14 +3,14 @@ FROM docker.io/library/ubuntu:23.04
 ARG HOST=${HOST}
 
 ARG PATH_PROJECT=/eip-x
-ARG PATH_MAIN=/${PATH_PROJECT}/helios
+ARG PATH_MAIN=${PATH_PROJECT}/helios
 
 ENV HOME /root
 WORKDIR ${PATH_MAIN}
 
 ARG RUST_NIGHTLY="2023-07-31"
-ARG BRANCH_NAME=docker
-ARG REPO_URL="https://github.com/ltfschoen/helios.git"
+ARG BRANCH_NAME=eip-x
+ARG REPO_URL="https://github.com/clawbird/helios.git"
 
 ENV RUSTUP_HOME=$HOME/rustup \
   CARGO_HOME=$HOME/cargo \

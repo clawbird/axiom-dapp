@@ -4,9 +4,12 @@
 
 * [Introduction](#introduction)
 * [Setup](#setup)
+  * [API Usage](#api-usage)
+* [Contributing](#contributing)
 * [Setup (using Docker)](#docker-setup)
   * [Run Axiom](#run-axiom)
-  * [Run Light Client (Helios)](#run-light-client)
+  * [Run Light Client (Helios)](#run-light-client-rust)
+  * [Run Light Client (Lodestar)](#run-light-client-js)
   * [Run Portal Network (Trin)](#run-trin)
   * [Docker Troubleshooting](#docker-troubleshooting)
 
@@ -20,12 +23,14 @@ The original [Setup](#setup) intructions are to be incorporated into the [Docker
 
 ## Setup <a id="setup"></a>
 
-Install `npm` or `yarn` or `pnpm`:
-
 ```bash
 # install nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 source ~/.bashrc
+nvm ls-remote --lts
 # Install latest LTS node
 nvm install --lts
 # Install pnpm
@@ -34,37 +39,68 @@ pnpm setup
 source ~/.bashrc
 ```
 
-To install this project's dependencies, run
+References:
+* https://github.com/DavidWells/pnpm-workspaces-example
+* https://github.com/ChainSafe/Multix
+
+### API Usage <a id="api-usage"></a>
+
+Copy `env.example` to `.env`.
 
 ```bash
-pnpm install
+cp ./.env.example ./.env
+cp ./.env ./packages/server/src/.env
 ```
 
-Copy `env.example` to `.env` and fill in with your provider URL (and optionally Goerli private key).
-You can export your Goerli private key in Metamask by going to "Account Details" and then "Export Private Key".
+Fill in with your provider URL and Goerli private key.
 
 > ⚠️ **WARNING**: Never use your mainnet private key on a testnet! You should never use a private key for an account you have on both mainnet and a testnet.
 
-## Run
+#### Run
 
-To run the script in [`index.ts`](./src/index.ts) that sends a query to `AxiomV1QueryMock` on Goerli testnet, run
+To run the script in [`index.ts`](./packages/client/src/index.ts) that sends a query to `AxiomV1QueryMock` on Goerli testnet, run
 
 ```bash
-pnpm start
+pnpm run start-client
 ```
 
-## Validate Witness
+Note: [PNPM workspaces](https://pnpm.io/workspaces) are used
 
-For an example of how to read your query results from `AxiomV1QueryMock` after they are fulfilled, see [`getWitness.ts`](./src/getWitness.ts).
+#### Validate Witness
+
+For an example of how to read your query results from `AxiomV1QueryMock` after they are fulfilled, see [`getWitness.ts`](./packages/client/src/getWitness.ts).
 This can be used to generate calldata for apps using Axiom.
 
 Run the script with
 
 ```bash
-pnpm getWitness
+pnpm run getWitness-client
 ```
 
 This particular script was used to generate the [test data](https://github.com/axiom-crypto/axiom-apps/blob/main/uniswap-v3-twap/test/data/input.json) for the [Uniswap V3 TWAP demo app](https://demo.axiom.xyz/token-price-v3) smart contract.
+
+## Contributing to EIP-X <a id="contributing"></a>
+
+The fastest way to setup the latest code for contributing is to follow these instructions.
+
+The goal is to incorporate any relevant latest Rust and TypeScript related contributions that have been made in https://github.com/sogolmalek/EIP-x into the forks of the following projects, and to add any other useful contributions.
+
+Please fork the 'eip-x' branch of the following upstream Clawbird repositories and clone them to your local machine, depending on which you wish to contribute to:
+* https://github.com/clawbird/helios
+* https://github.com/clawbird/lodestar
+* https://github.com/clawbird/trin
+
+Then fork the 'eip-x' branch of the following upstream Clawbird repository and clone it to your local machine:
+* https://github.com/clawbird/axiom-quickstart
+
+Then in your cloned fork of (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/axiom-quickstart), change the `REPO_URL` in the following files so it will allow you to work on your own cloned forks locally within Docker containers:
+* Modify ./docker/Dockerfile.helios.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/helios.git)
+* Modify ./docker/Dockerfile.lodestar.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/lodestar.git)
+* Modify ./docker/Dockerfile.trin.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/trin.git)
+
+Lastly follow the [Setup (using Docker)](#docker-setup) instructions to generate the local Docker containers based on your forks.
+
+If you make changes then commit them to a branch in your fork, and then create a Pull Request or generate an Issue with any contributions to 'eip-x' branch of the relevant upstream Clawbird repository mentioned above.
 
 ## Setup (using Docker) <a id="docker-setup"></a>
 
@@ -84,16 +120,16 @@ This particular script was used to generate the [test data](https://github.com/a
     docker logs -f axiom-quickstart-dev
     ```
 * Follow steps to [Run Light Client (Helios)](#run-light-client)
-* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-quickstart -it axiom-quickstart-dev pnpm start`
+* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-quickstart -it axiom-quickstart-dev pnpm install --force && pnpm run start-client`
   ```bash
-  pnpm start
+  pnpm install --force && pnpm run start-client
   ```
 * View the `sendQuery` transaction in block 9572809 (e.g. https://goerli.etherscan.io/tx/0x8d3247c58e3d71b339bdcf36b94c19ace9714899a1b955af369442cc241a2b7c)
 * View the `sendQuery` proof query response on Axiom explorer (e.g. https://explorer.axiom.xyz/goerli/query/0xb1d1f293915fd5e82d0cec8ec23b7b68a8147815bbb35fe6392607f2fda1c008)
 * View the `fulfillQueryVsMMR` response (e.g. https://goerli.etherscan.io/tx/0xf15752e834a1a481a748904b8a47439e6ca4d9610c71aaa6b4050fa6d018bc81)
 * Run the following inside the Docker container to read the query results
   ```bash
-  pnpm getWitness
+  pnpm run getWitness-client
   ```
 * View response
   ```
@@ -110,12 +146,12 @@ This particular script was used to generate the [test data](https://github.com/a
   * Chain DB path for Mainnet and/or Goerli
 * Set the environment variables
   ```sh
-  docker exec -w /eip-x/helios -it helios-dev sh -c ". /eip-x/helios/.env"
+  docker exec -w /eip-x/helios -it --user=root helios-dev sh -c ". /eip-x/helios/.env"
   ```
 * Follow the instructions "Running Helios CLI using Docker" at https://github.com/a16z/helios/pull/262/files to run it
 * Run a Helios Light Client node on Goerli by running the following outside the Docker container
 ```bash
-docker exec -w /eip-x/helios -it helios-dev cargo run -- \
+docker exec -w /eip-x/helios -it --user=root helios-dev cargo run -- \
   --network goerli \
   --consensus-rpc http://testing.prater.beacon-api.nimbus.team \
   --execution-rpc https://ethereum-goerli-rpc.allthatnode.com \
@@ -126,16 +162,26 @@ docker exec -w /eip-x/helios -it helios-dev cargo run -- \
 > If you get error `ERROR consensus::consensus] sync failed: could not fetch bootstrap rpc error on method: bootstrap, message: error decoding response body` then you need to get and use a more recent checkpoint value
 > To kill a process on port 8545 from outside the Docker container run the following to get the PID, then run `docker exec -w /eip-x/helios -it helios-dev kill -9 <PID>`, replacing <PID> with the PID number shown.
 ```bash
-docker exec -w /eip-x/helios -it helios-dev lsof -ti tcp:8545 | { read -d "" x; echo "$x" }
+docker exec -w /eip-x/helios -it --user=root helios-dev lsof -ti tcp:8545 | { read -d "" x; echo "$x" }
 ```
 
 * Run a Helios Light Client node on Mainnet
 ```bash
-docker exec -w /eip-x/helios -it helios-dev cargo run -- \
+docker exec -w /eip-x/helios -it --user=root helios-dev cargo run -- \
   --network mainnet \
   --consensus-rpc https://www.lightclientdata.org \
   --execution-rpc https://ethereum-mainnet-rpc.allthatnode.com \
   --checkpoint 0xbff6f8b24e15ad4420b34a56ded02702694d1c8141e05a75a5afbff8ef2ad71b
+```
+
+### Run Light Client (Lodestar) <a id="run-light-client-js"></a>
+
+```bash
+docker exec -w /eip-x/lodestar -it --user=root lodestar-dev /bin/bash
+```
+
+```bash
+node /eip-x/lodestar/packages/lodestar-cli/bin/lodestar --help
 ```
 
 ### Run Portal Network (Trin) <a id="run-trin"></a>
@@ -154,7 +200,7 @@ docker exec -it --user=root trin-dev /bin/bash
   RUST_LOG=INFO cargo run -- \
     --web3-http-address http://127.0.0.1:8547 \
     --web3-transport http \
-    --discovery-port 9000 \
+    --discovery-port 8001 \
     --external-address 127.0.0.1:8001
     --bootnodes default \
     --mb 200 \
@@ -205,6 +251,14 @@ docker exec -it --user=root trin-dev /bin/bash
 * If you are low on space it may be due to browser tabs
   * Go to Chrome Settings (dotted icon) > More Tools > Task Manager
     * Close tabs using large memory
+* If you get the following error then it's because you may have set an `---external-address` port but used a different `--discovery-port` when running the Trin CLI, so try just setting the `--discovery-port` to the same port as used by `---external-address` in the interim, because Trin needs to be updated so that when a user sets `--external-address` port then it should use the same port as `--discovery-port`
+  ```bash
+  2023-09-03T02:01:19.555485Z ERROR portalnet::overlay: Error bonding with bootnode alias=trin-ams3-1 protocol=History error=The request timed out
+  ...
+  2023-09-03T02:01:25.010546Z  WARN discv5::service: RPC Request failed: id: 33589e8caa589311, error InvalidRemotePacket
+  ...
+  2023-09-03T02:01:28.290272Z ERROR portalnet::overlay: Error bonding with bootnode alias=ultralight-2 protocol=History error=The request timed out
+  ```
 * To find the path to a Docker container logs
   ```
   CONTAINER_NAME=axiom

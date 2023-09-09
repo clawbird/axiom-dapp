@@ -99,7 +99,8 @@ fi
 
 NAME_MAIN_FALLBACK=axiom-quickstart
 
-export NAME_MAIN=$(jq '.name' $PWD/package.json | sed 's/\"//g' | sed 's/.*\///g')
+# export NAME_MAIN=$(jq '.name' $PWD/package.json | sed 's/\"//g' | sed 's/.*\///g')
+export NAME_MAIN=axiom-quickstart
 
 export PROVIDER_API_KEY_GOERLI PROVIDER_URI PRIVATE_KEY PUBLIC_IP_ADDRESS NODE_ENV HOST
 
