@@ -13,7 +13,7 @@
   },
   "scripts": {
     "setup": "pnpm install",
-    "start-server": "npm run start -w packages/server",
+    "start-server": "npm run dev -w packages/server",
     "getWitness-server": "npm run getWitness -w packages/server",
     "syncpack": "syncpack list-mismatches",
     "update-deps": "pnpm update -irL",

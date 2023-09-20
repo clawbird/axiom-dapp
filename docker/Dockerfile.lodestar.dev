@@ -1,5 +1,8 @@
-FROM docker.io/library/ubuntu:23.04
+# --platform=$BUILDPLATFORM is used build javascript source with host arch
+# Otherwise TS builds on emulated archs and can be extremely slow (+1h)
+FROM --platform=${BUILDPLATFORM:-amd64} node:20-alpine as build_src
 
+ARG COMMIT
 ARG NODE_ENV=${NODE_ENV}
 ARG PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS}
 ARG HOST=${HOST}
@@ -7,101 +10,54 @@ ARG HOST=${HOST}
 ARG PATH_PROJECT=/eip-x
 ARG PATH_MAIN=${PATH_PROJECT}/lodestar
 
-ENV HOME /root
-WORKDIR ${PATH_MAIN}
-
-# See https://github.com/nodesource/distributions#debian-and-ubuntu-based-distributions
-ARG NODE_MAJOR="20"
-ARG RUST_NIGHTLY="2022-10-28"
 ARG BRANCH_NAME=eip-x
 ARG REPO_URL="https://github.com/clawbird/lodestar.git"
 
-ENV RUSTUP_HOME=$HOME/rustup \
-  CARGO_HOME=$HOME/cargo \
-  PATH=$HOME/cargo/bin:$PATH:${PATH_MAIN}/node_modules/.bin:$PATH \
+ENV PATH=${PATH_MAIN}/node_modules/.bin:$PATH \
   DEBIAN_FRONTEND=noninteractive \
   LANG=C.UTF-8 \
   NODE_ENV=${NODE_ENV} \
   PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS} \
   HOST=${HOST}
 
-# # non-root user. `cat /etc/passwd`
-# RUN useradd -m -u 1001 -U -s /bin/sh -d ${PATH_PROJECT} lodestar-user && \
-#   chown -R lodestar-user:lodestar-user ${PATH_PROJECT} && \
-#   chgrp lodestar-user ${PATH_PROJECT} && \
-#   chgrp -R lodestar-user ${PATH_PROJECT} && \
-#   chmod 770 ${PATH_PROJECT} && \
-#   chmod -R 770 ${PATH_PROJECT}
+ENV HOME /${PATH_PROJECT}
 
-# COPY --chown=lodestar-user:lodestar-user . ${PATH_MAIN}
+WORKDIR ${PATH_PROJECT}
+RUN apk update && \
+  ls -al && \
+  apk add --no-cache g++ make python3 && \
+  apk add --no-cache git curl wget jq lsof unzip vim sudo && \
+  rm -rf /var/cache/apk/*
+
+# do not need this since working from a forked and cloned version of the project
 # COPY . ${PATH_MAIN}
-COPY ./shopt ${PATH_PROJECT}/shopt
 
-RUN set -e && \
-  apt-get -y update --fix-missing && \
-  apt-get -y upgrade && \
-  apt-get install -y build-essential pkg-config && \
-  apt-get install -y git curl wget jq lsof unzip vim sudo apt-utils && \
-  # Rust. Note: Rust is not actually required to be installed by Axiom
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
-  rustup component add rust-src rustfmt clippy && \
-  rustup target add wasm32-unknown-unknown && \
-  rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
-  rustup default "nightly-${RUST_NIGHTLY}" && \
-  rustup override set "nightly-${RUST_NIGHTLY}" && \
-  # install wasm target into nightly toolchain
-  rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
-  . $HOME/cargo/env && \
-  rustc --version && \
-  rustup show && \
-  # Node.js and npm
-  # exec bash && \
-  # try to solve `/bin/sh: 13: /root/.bashrc: shopt: not found` error
-  cp ${PATH_PROJECT}/shopt /usr/local/bin/shopt && \
-  ln -s /usr/local/bin/shopt /usr/bin/shopt && \
-  # echo "alias shopt='/usr/bin/shopt'" >> $HOME/.bashrc && \
-  . $HOME/.bashrc && \
-  # Install LTS node https://github.com/nodesource/distributions#manual-installation
-  cd ${PATH_MAIN} && \
-  # Download and import the Nodesource GPG key
-  apt-get install -y ca-certificates curl gnupg && \
-  mkdir -p /etc/apt/keyrings && \
-  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-  # Create deb repository
-  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-  # Run Update and Install
-  apt-get update && \
-  apt-get install -y nodejs && \
-  node --version && \
-  . $HOME/.bashrc && \
-  # Install Yarn
-  rm -rf /etc/apt/sources.list.d/yarn.list && \
-  rm -rf /usr/share/keyrings/yarn.list && \
-  # curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/yarn.gpg && \
-  # echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /usr/share/keyrings/yarn.list && \
-  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo tee /etc/apt/trusted.gpg.d/yarn.gpg && \
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
-  apt-get update && \
-  # Node.js has already been installed so use `--no-install-recommends`
-  apt-get install -y --no-install-recommends yarn && \
-  cd ${PATH_PROJECT} && \
+RUN cd ${PATH_PROJECT} && \
   git clone ${REPO_URL} && \
   cd lodestar && \
   git fetch origin ${BRANCH_NAME}:${BRANCH_NAME} && \
-  git checkout ${BRANCH_NAME}
-  # && \
-  # echo -e "Installing ${PATH_MAIN} dependencies across packages..." && \
-  # yarn install --force --network-timeout 1000000 --non-interactive --ignore-optional --frozen-lockfile && \
-  # yarn cache clean && \
-  # echo -e "Building ${PATH_MAIN} across packages..." && \
-  # yarn run build
-  # chown -R lodestar-user:lodestar-user ${PATH_MAIN}/node_modules && \
-  # chgrp lodestar-user ${PATH_MAIN}/node_modules && \
-  # chgrp -R lodestar-user ${PATH_MAIN}/node_modules && \
-  # chmod 770 ${PATH_MAIN}/node_modules && \
-  # chmod -R 770 ${PATH_MAIN}/node_modules
+  git checkout ${BRANCH_NAME} && \
+  yarn --version && \
+  yarn install --non-interactive --frozen-lockfile && \
+  yarn build && \
+  # To have access to the specific branch and commit used to build this source,
+  # a git-data.json file is created by persisting git data at build time. Then,
+  # a version string like `v0.35.0-beta.0/HEAD/82219149 (git)` can be shown in
+  # the terminal and in the logs; which is very useful to track tests better.
+  cd ${PATH_MAIN}/packages/cli && GIT_COMMIT=${COMMIT} yarn write-git-data && \
+  # Do yarn --force to trigger a rebuild of the native packages
+  # Emmulates `yarn rebuild` which is not available in v1 https://yarnpkg.com/cli/rebuild 
+  yarn install --non-interactive --frozen-lockfile --production --force --network-timeout 1000000000 && \
+  # Rebuild leveldb bindings (required for arm64 build)
+  cd ${PATH_MAIN}/node_modules/classic-level && \
+  yarn rebuild && \
+  node ${PATH_MAIN}/packages/cli/bin/lodestar --help
+
+# NodeJS applications have a default memory limit of 2.5GB.
+# This limit is bit tight for a Prater node, it is recommended to raise the limit
+# since memory may spike during certain network conditions.
+ENV NODE_OPTIONS="--no-huge-max-old-generation-size --max-old-space-size=8192"
 
 EXPOSE 5000 5500 8588 9596 30606
 
-# USER lodestar-user
 CMD tail -f /dev/null

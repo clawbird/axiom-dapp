@@ -1,7 +1,7 @@
 const api = require('./api');
 
 const port = 7000;
-app.listen(port, (error) => {
+api.listen(port, (error) => {
   if (error) {
     console.error('Error starting server: ', error);
   } else {

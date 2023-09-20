@@ -8,6 +8,7 @@
 * [Contributing](#contributing)
 * [Setup (using Docker)](#docker-setup)
   * [Run Axiom](#run-axiom)
+  * [Run API](#run-api)
   * [Run Light Client (Helios)](#run-light-client-rust)
   * [Run Light Client (Lodestar)](#run-light-client-js)
   * [Run Portal Network (Trin)](#run-trin)
@@ -136,6 +137,24 @@ If you make changes then commit them to a branch in your fork, and then create a
   {"keccakResponses":{"keccakBlockResponse":"...","keccakAccountResponse":"...","keccakStorageResponse":"..."},"storageResponses":[{"blockNumber":"0x92117a","addr":"0x8eb3a522cab99ed365e450dad696357de8ab7e9d","slot":"0x0","value":"0x0000000000000000000000000000000000000000000000000000000000000001","leafIdx":"0x06","proof":["...","...","...","...","...","..."]},{"blockNumber":"0x92117b","addr":"0x8eb3a522cab99ed365e450dad696357de8ab7e9d","slot":"0x01","value":"0x0000000000000000000000000000000000000000000000000000000000000000","leafIdx":"0x07","proof":["...","...","...","...","...","..."]}]}
   ```
 
+### Run API <a id="run-api"></a>
+
+* Configure .env files
+* Run the following to build Axiom, Helios, and Portal Network in separate Docker containers
+    ```bash
+    time ./docker/docker.sh
+    ```
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root api-dev /bin/bash`
+  * View logs
+    ```bash
+    docker logs -f api-dev
+    ```
+* Follow steps to [Run Light Client (Helios)](#run-light-client)
+* Run the following inside the Docker container, or `docker exec -w /eip-x/api -it api-dev pnpm install --force && pnpm run start-server`
+  ```bash
+  pnpm install --force && pnpm run start-server
+  ```
+
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
 * Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine, based on this PR https://github.com/a16z/helios/pull/262
@@ -176,13 +195,21 @@ docker exec -w /eip-x/helios -it --user=root helios-dev cargo run -- \
 
 ### Run Light Client (Lodestar) <a id="run-light-client-js"></a>
 
-```bash
-docker exec -w /eip-x/lodestar -it --user=root lodestar-dev /bin/bash
-```
-
-```bash
-node /eip-x/lodestar/packages/lodestar-cli/bin/lodestar --help
-```
+* Configure .env files
+* Run the following to build Axiom, Helios, and Portal Network in separate Docker containers
+    ```bash
+    time ./docker/docker.sh
+    ```
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -w /eip-x/lodestar -it --user=root lodestar-dev /bin/ash`
+    * Note: It uses Arch Linux
+  * View logs
+    ```bash
+    docker logs -f lodestar-dev
+    ```
+* Run the following inside the Docker container, or `docker exec -w /eip-x/lodestar -it lodestar-dev node /eip-x/lodestar/packages/cli/bin/lodestar --help`
+  ```bash
+  /eip-x/lodestar/packages/cli/bin/lodestar --help
+  ```
 
 ### Run Portal Network (Trin) <a id="run-trin"></a>
 
