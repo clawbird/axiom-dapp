@@ -25,11 +25,11 @@
 //   next();
 // }
 
-const getMPTProof = (req, res, next) => {
+const getMPTProof = (req: any, res: any, next: any) => {
   // TODO
 }
 
-const readBlockHeader = (req, res) => {
+const readBlockHeader = (req: any, res: any) => {
 //   stateRoot = res.stateRoot;
 //   // Return contract address in response object
 //   res.json({
@@ -37,7 +37,7 @@ const readBlockHeader = (req, res) => {
 //   })
 }
 
-const getProof = (req, res) => {
+const getProof = (req: any, res: any) => {
 //   proof = res.proof;
 //   // Return proof in response object
 //   res.json({
@@ -45,8 +45,8 @@ const getProof = (req, res) => {
 //   })
 }
 
-module.exports = {
-  getMPTProof: getMPTProof,
-  readBlockHeader: readBlockHeader,
-  getProof: getProof
+export {
+  getMPTProof,
+  readBlockHeader,
+  getProof
 }

@@ -1,22 +1,24 @@
-const express = require('express');
+import express from 'express';
+
+// @ts-ignore
 const router = new express.Router();
 
 // Require middleware modules
-const eipXMiddleware = require('../middleware/eipXMiddleware');
+import { getMPTProof, getProof, readBlockHeader } from '../middleware/eipXMiddleware';
 
 // GET localhost:7000/eipx/readBlockHeader
 router.get('/readBlockHeader', 
-  eipXMiddleware.readBlockHeader,
+  readBlockHeader,
 );
 
 // GET localhost:7000/eipx/getProof
 router.get('/getProof',
-  eipXMiddleware.getProof,
+  getProof,
 );
 
 // POST localhost:7000/eipx/getMPTProof
 router.post('/getMPTProof',
-  eipXMiddleware.getMPTProof,
+  getMPTProof,
 );
 
-module.exports = router;
+export default router;

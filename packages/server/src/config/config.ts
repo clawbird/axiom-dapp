@@ -1,12 +1,12 @@
 'use strict';
 
-const _ = require('lodash');
-const fs = require('fs');
+import _ from 'lodash';
+import fs from 'fs';
 
 fs.createReadStream('.env.example')
   .pipe(fs.createWriteStream('../.env'));
 
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 dotenv.load();
 
 const config = {
@@ -31,4 +31,8 @@ try {
 }
 
 // Merge configs so envConfig overwrites the config object
-module.exports = _.merge(config, envConfig);
+const exportConfig = _.merge(config, envConfig);
+
+export {
+  exportConfig
+}

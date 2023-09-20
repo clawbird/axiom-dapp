@@ -1,7 +1,7 @@
-const api = require('./api');
+import { api } from "./api";
 
 const port = 7000;
-api.listen(port, (error) => {
+api.listen(port, (error?: any) => {
   if (error) {
     console.error('Error starting server: ', error);
   } else {
