@@ -149,7 +149,9 @@ If you make changes then commit them to a branch in your fork, and then create a
     ```bash
     docker logs -f api-dev
     ```
-* Follow steps to [Run Light Client (Helios)](#run-light-client)
+* Follow steps to run a light client, either:
+  * [Run Light Client (Helios)](#run-light-client), or;
+  * [Run Light Client (Lodestar)](#run-light-client-js)
 * Run the following inside the Docker container, or `docker exec -w /eip-x/api -it api-dev pnpm install --force && pnpm run start-server`
   ```bash
   pnpm install --force && pnpm run start-server
