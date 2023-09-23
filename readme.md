@@ -156,10 +156,18 @@ If you make changes then commit them to a branch in your fork, and then create a
   ```bash
   pnpm install --force && pnpm run start-server
   ```
-* Request the latest finalized block from the client
+* Request the latest finalized block from the client by running the following command in another terminal window 
   ```bash
   curl -v -X GET http://localhost:7000/eipx/getLatestFinalizedBlock -H "Content-Type: application/json"
   ```
+* Send query to verifier by providing a block number that has been finalized.
+  ```bash
+  curl -v -X GET http://localhost:7000/eipx/sendQueryToVerifier --data '{"queries": [{"blockNumber": 9744549, "address": "0x8eb3a522cAB99ED365e450Dad696357DE8aB7E9d", "offsetBlockNumber": 2, "offsetSlot": 2}]}' -H "Content-Type: application/json"
+  ```
+  * Example response:
+    ```bash
+    {"data":{"_type":"TransactionReceipt","blockHash":"0x4f90673882cb6cb9781ccb9fb4019ed3c1b4aae0ef43d89443282cffbd01c4c2","blockNumber":9745942,"contractAddress":null,"cumulativeGasUsed":"108734","from":"0x1dd907ABb024E17d196de0D7Fe8EB507b6cCaae7","gasPrice":"100000000000","gasUsed":"87734","hash":"0xfa6dde491a5a68a7efecc6d6a870497f5478ebca1943f46b3d3f589581d703ce","index":1,"logs":[{"_type":"log","address":"0x4Fb202140c5319106F15706b1A69E441c9536306","blockHash":"0x4f90673882cb6cb9781ccb9fb4019ed3c1b4aae0ef43d89443282cffbd01c4c2","blockNumber":9745942,"data":"0x5bc2000a8732a6ff1cd3fe334c8331e96ccfcecb1cfacc67788ccbaca3ae2555000000000000000000000000000000000000000000000000002386f26fc1000000000000000000000000000000000000000000000000000000000000009607960000000000000000000000001dd907abb024e17d196de0d7fe8eb507b6ccaae76122480456cf0f66fc39f18fcb1848eeafdd99cc891659c4310c781e5111f03a","index":0,"topics":["0x51bc40919d53d6a0750201d2087c589a09286b4e9f320919d04ad4545ced4abb"],"transactionHash":"0xfa6dde491a5a68a7efecc6d6a870497f5478ebca1943f46b3d3f589581d703ce","transactionIndex":1}],"logsBloom":"0x00000010100000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000010000000000000000000000000","status":1,"to":"0x4Fb202140c5319106F15706b1A69E441c9536306"}
+    ```
 
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 

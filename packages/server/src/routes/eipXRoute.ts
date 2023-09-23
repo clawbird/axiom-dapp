@@ -8,12 +8,20 @@ import {
   getLatestFinalizedBlock,
   getMPTProof,
   getProof,
-  readBlockHeader
+  processLatestFinalizedBlock,
+  readBlockHeader,
+  sendQueryToVerifier,
 } from '../middleware/eipXMiddleware';
 
 // GET localhost:7000/eipx/getLatestFinalizedBlock
-router.get('/getLatestFinalizedBlock', 
+router.get('/getLatestFinalizedBlock',
   getLatestFinalizedBlock,
+);
+
+// GET localhost:7000/eipx/sendQueryToVerifier
+router.get('/sendQueryToVerifier',
+  processLatestFinalizedBlock,
+  sendQueryToVerifier,
 );
 
 // GET localhost:7000/eipx/readBlockHeader

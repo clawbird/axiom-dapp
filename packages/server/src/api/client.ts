@@ -6,6 +6,13 @@ import { abi as AxiomV1QueryAbi } from '../abi/AxiomV1Query.json';
 import { convertNumbersToHex } from '../utils';
 dotenv.config();
 
+interface Query {
+  blockNumber: number,
+  address: string,
+  offsetBlockNumber: number,
+  offsetSlot: number,
+};
+
 class Client {
   provider: any;
   providerUri: string;
@@ -41,36 +48,70 @@ class Client {
     this.wallet = wallet;
   }
 
-  private async buildQueryToVerify(blockNumber: number) {
-    // TODO - don't hard-code below address
-    // here is an example query to show you how QueryBuilder works
-    const UNI_V2_ADDR = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+  // Build queries using QueryBuilder.
+  // The query should include any finalized block number.
+  // It automatically gets slot 0.
+  // If offsetSlot of 2 is provided, then it will get slot 0, 1, and 2.
+  // If offsetBlock of 3 is provided, then it will get block numbers starting at `blockNumber`,
+  // `blockNumber + 1`, and `blockNumber + 2`.
+  // 
+  // Note: In the below example, "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f" is the UNI_V2_ADDR
+  //
+  // TODO: Only allow finalized block numbers to be provided in the query
+  //
+  // Example queries:
+  // [
+  //   {
+  //     blockNumber: 9744530,
+  //   },
+  //   {
+  //     blockNumber: 9744540,
+  //     address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+  //   },
+  //   {
+  //     blockNumber: 9744549,
+  //     address: "0x8eb3a522cAB99ED365e450Dad696357DE8aB7E9d",
+  //     offsetBlockNumber: 2,
+  //     offsetSlot: 2,
+  //   },
+  // ]
+
+  private async buildQueryToVerify(queries: Array<Query>) {
     const qb = ax.newQueryBuilder();
 
-    // a query for just a block header
-    await qb.append({ blockNumber });
-    // a query for a block header and the state of an account at that block
-    // this query in fact contains the previous one
-    await qb.append({ blockNumber, address: UNI_V2_ADDR });
-    // a query for a block header, account state, and the value at storage slot 0 of the account at that block
-    // this query in fact contains the previous two
-    await qb.append({ blockNumber, address: UNI_V2_ADDR, slot: 0 });
-    // query for a different storage slot
-    await qb.append({ blockNumber, address: UNI_V2_ADDR, slot: 1 });
-
-    // TODO - don't hard-code below address
-    // put an address that has non-empty slots
-    const testAddress = "0x8eb3a522cAB99ED365e450Dad696357DE8aB7E9d";
-    // we can query other blocks and accounts too:
-    for (let i = 0; i < 2; i++) {
-      qb.append({ blockNumber: blockNumber + i, address: testAddress });
-    }
-    for (let i = 0; i < 2; i++) {
-      await qb.append({
-        blockNumber: blockNumber + 2 + i,
-        address: testAddress,
-        slot: i,
-      });
+    for (let i = 0; i < queries.length; i++) {
+      // a query for a block header and the state of an account at that block,
+      // and the value at storage slot 0 of the account at that block,
+      // and query for a different storage slot.
+      // repeat for each block up to the offsetBlockNumber and offsetSlot
+      if (
+        queries[i].blockNumber && queries[i].address &&
+        queries[i].offsetBlockNumber &&
+        queries[i].offsetSlot
+      ) {
+        for (let j = 0; j < queries[i].offsetBlockNumber; j++) {
+          for (let k = 0; k < queries[i].offsetSlot; k++) {
+            await qb.append({
+              blockNumber: queries[i].blockNumber + k,
+              address: queries[i].address,
+              slot: queries[i].blockNumber + j,
+            });
+          }
+        }
+      // a query for a block header and the state of an account at that block,
+      // and the value at storage slot 0 of the account at that block
+      } else if (queries[i].blockNumber && queries[i].address) {
+        await qb.append({
+          blockNumber: queries[i].blockNumber,
+          address: queries[i].address,
+          slot: 0,
+        });
+      // a query for just a block header
+      } else if (queries[i].blockNumber) {
+        await qb.append({
+          blockNumber: queries[i].blockNumber
+        });
+      }
     }
 
     // Bundle all of the queries above into a single query to submit to the AxiomV1Query contract
@@ -88,8 +129,8 @@ class Client {
   // and the following event will be emitted, letting you know that your data is
   // ready to be used:
   // event QueryFulfilled(bytes32 keccakQueryResponse, uint256 payment, address prover);
-  async sendQueryToVerifier(currentQueryBlockNumber: number) {
-    const { keccakQueryResponse, query } = await this.buildQueryToVerify(currentQueryBlockNumber);
+  async sendQueryToVerifier(queries: Array<Query>) {
+    const { keccakQueryResponse, query } = await this.buildQueryToVerify(queries);
     const signer = this.getWalletSigner();
     const signerAddress = this.getWalletSignerAddress();
     const axiomV1Query = new ethers.Contract(
