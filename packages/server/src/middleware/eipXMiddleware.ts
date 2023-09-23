@@ -1,4 +1,12 @@
 import { ax } from '../config/axiom';
+import { client } from '../server';
+const getLatestFinalizedBlock = async (req: any, res: any) => {
+  const latestFinalizedBlock = await client.getLatestFinalizedBlock();
+  // Return the client latest finalized block in response object
+  res.json({
+    latestFinalizedBlock
+  })
+}
 
 const getMPTProof = (req: any, res: any, next: any) => {
   // TODO
@@ -21,6 +29,7 @@ const getProof = (req: any, res: any) => {
 }
 
 export {
+  getLatestFinalizedBlock,
   getMPTProof,
   readBlockHeader,
   getProof

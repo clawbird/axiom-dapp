@@ -4,7 +4,17 @@ import express from 'express';
 const router = new express.Router();
 
 // Require middleware modules
-import { getMPTProof, getProof, readBlockHeader } from '../middleware/eipXMiddleware';
+import {
+  getLatestFinalizedBlock,
+  getMPTProof,
+  getProof,
+  readBlockHeader
+} from '../middleware/eipXMiddleware';
+
+// GET localhost:7000/eipx/getLatestFinalizedBlock
+router.get('/getLatestFinalizedBlock', 
+  getLatestFinalizedBlock,
+);
 
 // GET localhost:7000/eipx/readBlockHeader
 router.get('/readBlockHeader', 

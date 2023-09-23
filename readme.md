@@ -156,6 +156,10 @@ If you make changes then commit them to a branch in your fork, and then create a
   ```bash
   pnpm install --force && pnpm run start-server
   ```
+* Request the latest finalized block from the client
+  ```bash
+  curl -v -X GET http://localhost:7000/eipx/getLatestFinalizedBlock -H "Content-Type: application/json"
+  ```
 
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
