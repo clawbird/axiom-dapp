@@ -11,6 +11,7 @@ import {
   processLatestFinalizedBlock,
   readBlockHeader,
   sendQueryToVerifier,
+  verifyQueryResults,
 } from '../middleware/eipXMiddleware';
 
 // GET localhost:7000/eipx/getLatestFinalizedBlock
@@ -22,6 +23,11 @@ router.get('/getLatestFinalizedBlock',
 router.get('/sendQueryToVerifier',
   processLatestFinalizedBlock,
   sendQueryToVerifier,
+);
+
+// GET localhost:7000/eipx/verifyQueryResults
+router.get('/verifyQueryResults',
+  verifyQueryResults,
 );
 
 // GET localhost:7000/eipx/readBlockHeader

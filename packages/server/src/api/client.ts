@@ -17,6 +17,7 @@ class Client {
   provider: any;
   providerUri: string;
   wallet: any;
+  queryHashes: Array<string>;
 
   constructor() {
     let providerUri = process.env.PROVIDER_URI as string;
@@ -26,7 +27,8 @@ class Client {
       this.providerUri = 'http://127.0.0.1:8545';
     }
     this.createProvider();
-    this.createWalletForPrivateKey()
+    this.createWalletForPrivateKey();
+    this.queryHashes = [];
   }
 
   createProvider() {
@@ -119,6 +121,8 @@ class Client {
     console.log("keccakQueryResponse:", keccakQueryResponse);
     console.log("Query hash:", queryHash);
     console.log("Query data:", query);
+    this.queryHashes.push(queryHash);
+
     return { keccakQueryResponse, queryHash, query };
   }
 
@@ -130,7 +134,7 @@ class Client {
   // ready to be used:
   // event QueryFulfilled(bytes32 keccakQueryResponse, uint256 payment, address prover);
   async sendQueryToVerifier(queries: Array<Query>) {
-    const { keccakQueryResponse, query } = await this.buildQueryToVerify(queries);
+    const { keccakQueryResponse, queryHash, query } = await this.buildQueryToVerify(queries);
     const signer = this.getWalletSigner();
     const signerAddress = this.getWalletSignerAddress();
     const axiomV1Query = new ethers.Contract(
@@ -205,29 +209,21 @@ class Client {
       }
     }
 
-    console.log(
-      JSON.stringify({
-        keccakResponses: {
-          keccakBlockResponse,
-          keccakAccountResponse,
-          keccakStorageResponse,
-        },
-        blockResponse,
-        accountResponse,
-        storageResponses: storageResponses?.map((res: any) =>
-          convertNumbersToHex(res?.storageResponse)
-        ) || [],
-      })
-    );
-
-    return {
-      keccakBlockResponse,
-      keccakAccountResponse,
-      keccakStorageResponse,
+    let responses: any = {
+      keccakResponses: {
+        keccakBlockResponse,
+        keccakAccountResponse,
+        keccakStorageResponse,
+      },
       blockResponse,
       accountResponse,
-      storageResponse
-    }
+      storageResponses: storageResponses?.map((res: any) =>
+        convertNumbersToHex(res?.storageResponse)
+      ) || [],
+    };
+    console.log(JSON.stringify(responses));
+
+    return responses;
   }
   
   getProviderUri() {
