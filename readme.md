@@ -9,6 +9,7 @@
 * [Setup (using Docker)](#docker-setup)
   * [Run Axiom](#run-axiom)
   * [Run API](#run-api)
+  * [Run Axiom-Eth](#run-axiom-eth)
   * [Run Light Client (Helios)](#run-light-client-rust)
   * [Run Light Client (Lodestar)](#run-light-client-js)
   * [Run Portal Network (Trin)](#run-trin)
@@ -176,6 +177,29 @@ If you make changes then commit them to a branch in your fork, and then create a
   * Note: This does not work for some reason. It sends a request to `/v1/query/get_data_for_query?queryHash=0x6122480456cf0f66fc39f18fcb1848eeafdd99cc891659c4310c781e5111f03a&chainId=5&contractAddress=0x82842F7a41f695320CC255B34F18769D68dD8aDF&mock=false` but generates error `QueryNotFoundInDbError`
 `
 
+### Run Axiom-Eth <a id="run-axiom-eth"></a>
+
+* Update the forked clone https://github.com/ltfschoen/axiom-eth that is used in Dockerfile.axiom-eth.dev so it has the latest changes in its upstream repository, and use its latest Rust version
+* Configure .env files
+  * Obtain and add your Infura API key to `INFURA_ID` in the .env file
+* Run the following to build separate Docker containers
+    ```bash
+    time ./docker/docker.sh
+    ```
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root axiom-eth-dev /bin/bash`
+  * View logs
+    ```bash
+    docker logs -f axiom-eth-dev
+    ```
+* Follow steps to run a light client, either:
+  * [Run Light Client (Helios)](#run-light-client), or;
+  * [Run Light Client (Lodestar)](#run-light-client-js)
+  * **TODO** Currently axiom-eth connects to Infura, so need to figure out how to have it connect to a local node instead like Helios or Lodestar
+* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-eth -it axiom-eth-dev cargo run --bin header_chain --release -- --help`
+  ```bash
+  cargo run --bin header_chain --release -- --help
+  ```
+
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
 * Run Helios as an Ethereum light client in a Docker container running on port 8545 with that port exposed to the host machine, based on this PR https://github.com/a16z/helios/pull/262
@@ -216,6 +240,7 @@ docker exec -w /eip-x/helios -it --user=root helios-dev cargo run -- \
 
 ### Run Light Client (Lodestar) <a id="run-light-client-js"></a>
 
+* Update the forked clone https://github.com/ltfschoen/lodestar that is used in Dockerfile.lodestar.dev so it has the latest changes in its upstream repository, and use its latest Rust version
 * Configure .env files
 * Run the following to build Axiom, Helios, and Portal Network in separate Docker containers
     ```bash
@@ -234,8 +259,11 @@ docker exec -w /eip-x/helios -it --user=root helios-dev cargo run -- \
 
 ### Run Portal Network (Trin) <a id="run-trin"></a>
 
+* Update the forked clone https://github.com/ltfschoen/trin that is used in Dockerfile.trin.dev so it has the latest changes in its upstream repository, and use its latest Rust version
 * Run the shell script in [Run Axiom](#run-axiom) to build Axiom, Helios, and Portal Network in separate Docker containers
-
+  ```bash
+  time ./docker/docker.sh
+  ```
 * Enter the Trin Docker container run:
 ```bash
 docker exec -it --user=root trin-dev /bin/bash

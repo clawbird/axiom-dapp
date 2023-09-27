@@ -62,41 +62,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # # database
       # - ./data:/root/.helios/data/
-  axiom:
-    container_name: ${NAME_MAIN}-dev
+  axiometh:
+    container_name: axiom-eth-dev
     restart: always
     build:
       context: "."
-      dockerfile: ./docker/Dockerfile.axiom.dev
-      args:
-        - NAME_MAIN=${NAME_MAIN}
-        - NODE_ENV=${NODE_ENV}
-        - PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI}
-        - PROVIDER_URI=${PROVIDER_URI}
-        - PRIVATE_KEY=${PRIVATE_KEY}
-        - PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS}
-        - HOST=${HOST}
-    volumes:
-      - ./:/eip-x/${NAME_MAIN}:delegated
-      - ignore:/eip-x/${NAME_MAIN}/node_modules
-    # https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
-    # use this to avoid connection to 127.0.0.1:8545 being refused
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    # ports:
-    #   - "X:X"
-    env_file:
-      - ./.env
-    depends_on:
-      - helios
-    links:
-      - helios
-  helios:
-    container_name: helios-dev
-    restart: always
-    build:
-      context: "."
-      dockerfile: ./docker/Dockerfile.helios.dev
+      dockerfile: ./docker/Dockerfile.axiom-eth.dev
       args:
         - HOST=${HOST}
     environment:
@@ -106,60 +77,111 @@ services:
     # size when running
     shm_size: 1gb
     ports:
-      - "8545:8545"
-      - "9001:9001"
-      - "9002:9002"
+      - "7878:7878"
+    env_file:
+      - ./.env
     # https://github.com/docker/for-mac/issues/1996#issuecomment-408336035
     volumes:
       - /var/lib/docker/containers:/mnt/log/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # database
-      - ./data:/root/.helios/data/
-  trin:
-    container_name: trin-dev
-    restart: always
-    build:
-      context: "."
-      dockerfile: ./docker/Dockerfile.trin.dev
-      args:
-        - HOST=${HOST}
-      # size when building
-      shm_size: 20gb
-    # size when running
-    shm_size: 20gb
-    environment:
-      HOST: ${HOST}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      # Grafana
-      - "3000:3000"
-      # Helios light client http port
-      # do not use 8545 otherwise conflict with other running ports on host machine
-      - "8577:8545"
-      # WS port
-      - "8546:8546"
-      # Portal Network node web3 http address
-      - "8547:8547"
-      # Portal Network nodes
-      - "8000-8100:8000-8100"
-      # discovery port
-      - "9000:9000"
-      - "9009:9009"
-      # Prometheus
-      - "9090:9090"
-      # metrics node exporter
-      - "9100:9100"
-      # metrics node exporter
-      - "9101:9101"
-      # Ansible
-      - "22:22"
-    # https://github.com/docker/for-mac/issues/1996#issuecomment-408336035
-    volumes:
-      - /var/lib/docker/containers:/mnt/log/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # database
-      - ./data:/root/.local/share/trin
+  # axiom:
+  #   container_name: ${NAME_MAIN}-dev
+  #   restart: always
+  #   build:
+  #     context: "."
+  #     dockerfile: ./docker/Dockerfile.axiom.dev
+  #     args:
+  #       - NAME_MAIN=${NAME_MAIN}
+  #       - NODE_ENV=${NODE_ENV}
+  #       - PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI}
+  #       - PROVIDER_URI=${PROVIDER_URI}
+  #       - PRIVATE_KEY=${PRIVATE_KEY}
+  #       - PUBLIC_IP_ADDRESS=${PUBLIC_IP_ADDRESS}
+  #       - HOST=${HOST}
+  #   volumes:
+  #     - ./:/eip-x/${NAME_MAIN}:delegated
+  #     - ignore:/eip-x/${NAME_MAIN}/node_modules
+  #   # https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+  #   # use this to avoid connection to 127.0.0.1:8545 being refused
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   # ports:
+  #   #   - "X:X"
+  #   env_file:
+  #     - ./.env
+  #   depends_on:
+  #     - helios
+  #   links:
+  #     - helios
+  # helios:
+  #   container_name: helios-dev
+  #   restart: always
+  #   build:
+  #     context: "."
+  #     dockerfile: ./docker/Dockerfile.helios.dev
+  #     args:
+  #       - HOST=${HOST}
+  #   environment:
+  #     HOST: ${HOST}
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   # size when running
+  #   shm_size: 1gb
+  #   ports:
+  #     - "8545:8545"
+  #     - "9001:9001"
+  #     - "9002:9002"
+  #   # https://github.com/docker/for-mac/issues/1996#issuecomment-408336035
+  #   volumes:
+  #     - /var/lib/docker/containers:/mnt/log/containers:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     # database
+  #     - ./data:/root/.helios/data/
+  # trin:
+  #   container_name: trin-dev
+  #   restart: always
+  #   build:
+  #     context: "."
+  #     dockerfile: ./docker/Dockerfile.trin.dev
+  #     args:
+  #       - HOST=${HOST}
+  #     # size when building
+  #     shm_size: 20gb
+  #   # size when running
+  #   shm_size: 20gb
+  #   environment:
+  #     HOST: ${HOST}
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   ports:
+  #     # Grafana
+  #     - "3000:3000"
+  #     # Helios light client http port
+  #     # do not use 8545 otherwise conflict with other running ports on host machine
+  #     - "8577:8545"
+  #     # WS port
+  #     - "8546:8546"
+  #     # Portal Network node web3 http address
+  #     - "8547:8547"
+  #     # Portal Network nodes
+  #     - "8000-8100:8000-8100"
+  #     # discovery port
+  #     - "9000:9000"
+  #     - "9009:9009"
+  #     # Prometheus
+  #     - "9090:9090"
+  #     # metrics node exporter
+  #     - "9100:9100"
+  #     # metrics node exporter
+  #     - "9101:9101"
+  #     # Ansible
+  #     - "22:22"
+  #   # https://github.com/docker/for-mac/issues/1996#issuecomment-408336035
+  #   volumes:
+  #     - /var/lib/docker/containers:/mnt/log/containers:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     # database
+  #     - ./data:/root/.local/share/trin
 
 volumes:
   ignore:
