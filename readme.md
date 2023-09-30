@@ -199,6 +199,14 @@ If you make changes then commit them to a branch in your fork, and then create a
   ```bash
   cargo run --bin header_chain --release -- --help
   ```
+  * Note: See axiom-eth/src/bin/AxiomV1.md
+* Example:
+  ```
+  cargo run --bin header_chain --release -- --network goerli --start 9744549 --end 9744549 --max-depth 10 --initial-depth 7 --final evm --extra-rounds 1 --calldata --create-contract
+
+  Start:   Generating SNARKs for blocks 9744549 to 9744549, max depth 10, initial depth 7, finality evm
+thread 'main' panicked at '"configs/headers/goerli_7.json" does not exist: Os { code: 2, kind: NotFound, message: "No such file or directory" }', /eip-x/axiom-eth/axiom-eth/src/util/mod.rs:85:37
+  ```
 
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
