@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 let providerUri = process.env.PROVIDER_URI as string;
-if (!providerUri || providerUri === '') {
+let useLocalNode = process.env.LOCAL_NODE;
+if (useLocalNode == 'y' || !providerUri || providerUri === '') {
   // Light client
   providerUri = 'http://127.0.0.1:8545';
 }

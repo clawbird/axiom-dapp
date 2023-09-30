@@ -158,9 +158,18 @@ View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
 * Follow steps to run a light client, either:
   * [Run Light Client (Helios)](#run-light-client), or;
   * [Run Light Client (Lodestar)](#run-light-client-js)
-* Run the following inside the Docker container, or `docker exec -w /eip-x/api -it api-dev pnpm install --force && pnpm run start-server`
+* Connect
+  * Alchemy - Run the following inside the Docker container to connect to Alchemy, or `docker exec -w /eip-x/api -it --user=root api-dev pnpm install --force && pnpm run start-server`
   ```bash
-  pnpm install --force && pnpm run start-server
+  pnpm install --force && \
+  export LOCAL_NODE=n && \
+  pnpm run start-server
+  ```
+  * Local Node - Run the following inside the Docker container to connect to a local node on port 8545 (e.g. Helios or Lodestar):
+  ```bash
+  pnpm install --force && \
+  export LOCAL_NODE=y && \
+  pnpm run start-server
   ```
 * Request the latest finalized block from the client by running the following command in another terminal window 
   ```bash
