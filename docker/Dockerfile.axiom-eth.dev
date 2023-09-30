@@ -47,8 +47,20 @@ RUN set -e && \
   cp ${PATH_PROJECT}/.env.example ${PATH_PROJECT}/axiom-eth/axiom-eth/.env.example && \
   cp ${PATH_PROJECT}/.env ${PATH_PROJECT}/axiom-eth/axiom-eth/.env && \
   . ${PATH_PROJECT}/axiom-eth/axiom-eth/.env && \
-  cargo update -p anstyle@1.0.3 --precise 1.0.2 && \
-  cargo update -p clap@4.4.5 --precise 4.3.24 && \
+  # if you get this error
+  # error: package `xxx vx.y.z` cannot be built because it requires rustc 1.70.0 or newer,
+  # while the currently active rustc version is 1.66.0-nightly
+  # Either upgrade to rustc 1.70.0 or newer, or use
+  # cargo update -p xxx@x.y.z --precise ver
+  # where `ver` is the latest version of `xxx` supporting rustc 1.66.0-nightly
+  #
+  # for example, if xxx is anstyle-parse, then go to
+  # https://crates.io/crates/anstyle-parse/versions
+  # and replace `ver` with a version v1.64.0 instead of the latest that uses v1.70.0
+  # and update or add it to the below
+  cargo update -p anstyle@1.0.4 --precise 1.0.2 && \
+  cargo update -p anstyle-parse@0.2.2 --precise 0.2.1 && \
+  cargo update -p clap@4.4.6 --precise 4.3.24 && \
   cargo update -p clap_lex@0.5.1 --precise 0.5.0 && \
   cargo build --verbose && \
   cargo run --bin header_chain --release -- --help
