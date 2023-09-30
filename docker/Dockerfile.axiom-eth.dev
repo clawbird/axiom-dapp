@@ -1,0 +1,58 @@
+FROM docker.io/library/ubuntu:22.04
+
+ARG HOST=${HOST}
+
+ARG PATH_PROJECT=/eip-x
+ARG PATH_MAIN=${PATH_PROJECT}/axiom-eth
+
+ENV HOME /root
+WORKDIR ${PATH_MAIN}
+
+# version required according to rust-toolchain of axiom-eth repo
+ARG RUST_NIGHTLY="2022-10-28"
+ARG BRANCH_NAME=eip-x
+ARG REPO_URL="https://github.com/clawbird/axiom-eth.git"
+
+ENV RUSTUP_HOME=$HOME/rustup \
+  CARGO_HOME=$HOME/cargo \
+  PATH=$HOME/cargo/bin:$PATH \
+  HOST=${HOST}
+
+COPY ./.env.example ${PATH_PROJECT}/.env.example
+COPY ./.env ${PATH_PROJECT}/.env
+
+RUN set -e && \
+  apt-get -y update --fix-missing && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential pkg-config && \
+  # # Helios-specific requirement
+  # apt-get install -y libfontconfig-dev && \
+  apt-get install -y git curl wget jq lsof unzip vim && \
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain nightly -y && \
+  rustup component add rust-src rustfmt clippy && \
+  rustup target add wasm32-unknown-unknown && \
+  rustup toolchain install "nightly-${RUST_NIGHTLY}" --profile minimal --component rustfmt && \
+  rustup default "nightly-${RUST_NIGHTLY}" && \
+  rustup override set "nightly-${RUST_NIGHTLY}" && \
+  # install wasm target into nightly toolchain
+  rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
+  . $HOME/cargo/env && \
+  rustc --version && \
+  rustup show && \
+  cd ${PATH_PROJECT} && \
+  git clone ${REPO_URL} && \
+  cd axiom-eth && \
+  git fetch origin ${BRANCH_NAME}:${BRANCH_NAME} && \
+  git checkout ${BRANCH_NAME} && \
+  cp ${PATH_PROJECT}/.env.example ${PATH_PROJECT}/axiom-eth/axiom-eth/.env.example && \
+  cp ${PATH_PROJECT}/.env ${PATH_PROJECT}/axiom-eth/axiom-eth/.env && \
+  . ${PATH_PROJECT}/axiom-eth/axiom-eth/.env && \
+  cargo update -p anstyle@1.0.3 --precise 1.0.2 && \
+  cargo update -p clap@4.4.5 --precise 4.3.24 && \
+  cargo update -p clap_lex@0.5.1 --precise 0.5.0 && \
+  cargo build --verbose && \
+  cargo run --bin header_chain --release -- --help
+
+EXPOSE 7878
+
+CMD tail -f /dev/null
