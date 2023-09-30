@@ -13,7 +13,7 @@ const config: AxiomConfig = {
   providerUri,
   version: 'v1',
   chainId: 5, // Goerli; defaults to 1 (Ethereum Mainnet)
-  mock: false, // builds proofs with or without utilizing actual Prover resources
+  mock: true, // builds proofs with or without utilizing actual Prover resources
 };
 const ax = new Axiom(config);
 console.log('Axiom instance: ', ax);

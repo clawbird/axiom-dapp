@@ -145,7 +145,7 @@ View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
 ### Run API <a id="run-api"></a>
 
 * Configure .env files
-* Configure whether to use `mock: true` or not. If so it will use mock contracts https://github.com/axiom-crypto/axiom-sdk/blob/main/src/shared/chainConfig/goerli.ts#L68
+* Configure `mock: true` if necessary. If so it will use mock contracts https://github.com/axiom-crypto/axiom-sdk/blob/main/src/shared/chainConfig/goerli.ts#L68
 * Run the following to build Axiom, Helios, and Portal Network in separate Docker containers
     ```bash
     time ./docker/docker.sh
