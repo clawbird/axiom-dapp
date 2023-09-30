@@ -93,9 +93,9 @@ Please fork the 'eip-x' branch of the following upstream Clawbird repositories a
 * https://github.com/clawbird/trin
 
 Then fork the 'eip-x' branch of the following upstream Clawbird repository and clone it to your local machine:
-* https://github.com/clawbird/axiom-quickstart
+* https://github.com/clawbird/axiom-dapp
 
-Then in your cloned fork of (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/axiom-quickstart), change the `REPO_URL` in the following files so it will allow you to work on your own cloned forks locally within Docker containers:
+Then in your cloned fork of (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/axiom-dapp), change the `REPO_URL` in the following files so it will allow you to work on your own cloned forks locally within Docker containers:
 * Modify ./docker/Dockerfile.helios.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/helios.git)
 * Modify ./docker/Dockerfile.lodestar.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/lodestar.git)
 * Modify ./docker/Dockerfile.trin.dev changing `REPO_URL` to your fork (i.e. https://github.com/<YOUR_GITHUB_USERNAME>/trin.git)
@@ -116,13 +116,13 @@ If you make changes then commit them to a branch in your fork, and then create a
     ```bash
     time ./docker/docker.sh
     ```
-  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root axiom-quickstart-dev /bin/bash`
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root axiom-dapp-dev /bin/bash`
   * View logs
     ```bash
-    docker logs -f axiom-quickstart-dev
+    docker logs -f axiom-dapp-dev
     ```
 * Follow steps to [Run Light Client (Helios)](#run-light-client)
-* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-quickstart -it axiom-quickstart-dev pnpm install --force && pnpm run start-client`
+* Run the following inside the Docker container, or `docker exec -w /eip-x/axiom-dapp -it axiom-dapp-dev pnpm install --force && pnpm run start-client`
   ```bash
   pnpm install --force && pnpm run start-client
   ```
