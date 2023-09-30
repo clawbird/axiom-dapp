@@ -104,6 +104,10 @@ Lastly follow the [Setup (using Docker)](#docker-setup) instructions to generate
 
 If you make changes then commit them to a branch in your fork, and then create a Pull Request or generate an Issue with any contributions to 'eip-x' branch of the relevant upstream Clawbird repository mentioned above.
 
+### Roadmap
+
+View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
+
 ## Setup (using Docker) <a id="docker-setup"></a>
 
 * Install and run [Docker](https://www.docker.com/)
