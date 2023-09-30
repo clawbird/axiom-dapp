@@ -150,7 +150,7 @@ View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
     ```bash
     time ./docker/docker.sh
     ```
-  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -it --user=root api-dev /bin/bash`
+  * Note: It automatically enters you into the Docker container. To exit Docker container run CTRL+C, and to re-enter run `docker exec -w /eip-x/api -it --user=root api-dev /bin/bash`
   * View logs
     ```bash
     docker logs -f api-dev
@@ -159,14 +159,16 @@ View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
   * [Run Light Client (Helios)](#run-light-client), or;
   * [Run Light Client (Lodestar)](#run-light-client-js)
 * Connect
-  * Alchemy - Run the following inside the Docker container to connect to Alchemy, or `docker exec -w /eip-x/api -it --user=root api-dev pnpm install --force && pnpm run start-server`
+  * Alchemy - Run the following inside the Docker container to connect to Alchemy
   ```bash
+  source ./.env
   pnpm install --force && \
   export LOCAL_NODE=n && \
   pnpm run start-server
   ```
   * Local Node - Run the following inside the Docker container to connect to a local node on port 8545 (e.g. Helios or Lodestar):
   ```bash
+  source ./.env
   pnpm install --force && \
   export LOCAL_NODE=y && \
   pnpm run start-server

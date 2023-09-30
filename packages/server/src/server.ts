@@ -10,6 +10,7 @@ app.listen(port, (error?: any) => {
   } else {
     console.log(`Success starting server http://localhost:${port}/`);
     client = new Client();
+    console.log('client', client);
   }
 })
 

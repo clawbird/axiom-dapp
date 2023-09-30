@@ -21,8 +21,9 @@ class Client {
 
   constructor() {
     let providerUri = process.env.PROVIDER_URI as string;
+    let useLocalNode = process.env.LOCAL_NODE;
     this.providerUri = providerUri || '';
-    if (!providerUri || providerUri === '') {
+    if (useLocalNode == 'y' || !providerUri || providerUri === '') {
       // light client
       this.providerUri = 'http://127.0.0.1:8545';
     }
