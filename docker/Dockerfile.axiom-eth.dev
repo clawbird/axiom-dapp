@@ -13,8 +13,8 @@ ARG RUST_NIGHTLY="2022-10-28"
 ARG BRANCH_NAME=eip-x
 ARG REPO_URL="https://github.com/clawbird/axiom-eth.git"
 
-ENV RUSTUP_HOME=$HOME/rustup \
-  CARGO_HOME=$HOME/cargo \
+ENV RUSTUP_HOME=$HOME/.rustup \
+  CARGO_HOME=$HOME/.cargo \
   PATH=$HOME/cargo/bin:$PATH \
   HOST=${HOST}
 
@@ -36,7 +36,7 @@ RUN set -e && \
   rustup override set "nightly-${RUST_NIGHTLY}" && \
   # install wasm target into nightly toolchain
   rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
-  . $HOME/cargo/env && \
+  . $HOME/.cargo/env && \
   rustc --version && \
   rustup show && \
   cd ${PATH_PROJECT} && \

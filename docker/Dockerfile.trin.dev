@@ -12,17 +12,18 @@ ARG RUST_NIGHTLY="2023-08-03"
 ARG BRANCH_NAME=eip-x
 ARG REPO_URL="https://github.com/clawbird/trin.git"
 
-ENV RUSTUP_HOME=$HOME/rustup \
-  CARGO_HOME=$HOME/cargo \
-  PATH=$HOME/cargo/bin:$PATH \
+ENV RUSTUP_HOME=$HOME/.rustup \
+  CARGO_HOME=$HOME/.cargo \
+  PATH=$HOME/.cargo/bin:$PATH \
   # error/warn/info/debug/trace
   RUST_LOG=DEBUG \
   TRIN_DATA_PATH=$HOME/.local/share/trin \
   HOST=${HOST}
 
 RUN set -e && \
-  mkdir -p /data $TRIN_DATA_PATH && \
-  ln -s /data $TRIN_DATA_PATH && \
+  # removed link from data directory to host machine since causes issues purging saying it is in use
+  # mkdir -p /data $TRIN_DATA_PATH && \
+  # ln -s /data $TRIN_DATA_PATH && \
   # The following code is commented out as it
   # causes error `fatal: detected dubious ownership in repository`
   # # non-root user. `cat /etc/passwd`
@@ -52,7 +53,7 @@ RUN set -e && \
   rustup override set "nightly-${RUST_NIGHTLY}" && \
   # install wasm target into nightly toolchain
   rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
-  . $HOME/cargo/env && \
+  . $HOME/.cargo/env && \
   rustc --version && \
   rustup show && \
   cd ${PATH_PROJECT} && \
@@ -71,5 +72,5 @@ EXPOSE 3000 8546-8547 8000-8100 9000 9009 9090 9100 9101 22
 EXPOSE 8577
 
 # USER trin-user
-VOLUME ["/data"]
+# VOLUME ["/data"]
 CMD tail -f /dev/null

@@ -12,9 +12,9 @@ ARG RUST_NIGHTLY="2023-07-31"
 ARG BRANCH_NAME=eip-x
 ARG REPO_URL="https://github.com/clawbird/helios.git"
 
-ENV RUSTUP_HOME=$HOME/rustup \
-  CARGO_HOME=$HOME/cargo \
-  PATH=$HOME/cargo/bin:$PATH \
+ENV RUSTUP_HOME=$HOME/.rustup \
+  CARGO_HOME=$HOME/.cargo \
+  PATH=$HOME/.cargo/bin:$PATH \
   HOST=${HOST}
 
 RUN set -e && \
@@ -32,7 +32,7 @@ RUN set -e && \
   rustup override set "nightly-${RUST_NIGHTLY}" && \
   # install wasm target into nightly toolchain
   rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
-  . $HOME/cargo/env && \
+  . $HOME/.cargo/env && \
   rustc --version && \
   rustup show && \
   cd ${PATH_PROJECT} && \

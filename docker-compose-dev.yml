@@ -27,11 +27,11 @@ services:
       - ./.env
     # temporarily disable whatever light client not currently uncommented in this file
     depends_on:
-      # - helios
-      - lodestar
+      - helios
+      # - lodestar
     links:
-      # - helios
-      - lodestar
+      - helios
+      # - lodestar
   lodestar:
     container_name: lodestar-dev
     restart: always
@@ -136,7 +136,7 @@ services:
       - /var/lib/docker/containers:/mnt/log/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # database
-      - ./data:/root/.helios/data/
+      # - ./data:/root/.helios/data/
   trin:
     container_name: trin-dev
     restart: always
@@ -181,7 +181,7 @@ services:
       - /var/lib/docker/containers:/mnt/log/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # database
-      - ./data:/root/.local/share/trin
+      # - ./data:/root/.local/share/trin
 
 volumes:
   ignore:

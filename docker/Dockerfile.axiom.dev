@@ -18,9 +18,9 @@ WORKDIR ${PATH_MAIN}
 ARG NODE_MAJOR="20"
 ARG RUST_NIGHTLY="2022-10-28"
 
-ENV RUSTUP_HOME=$HOME/rustup \
-  CARGO_HOME=$HOME/cargo \
-  PATH=$HOME/cargo/bin:$PATH:${PATH_MAIN}/node_modules/.bin:$PATH \
+ENV RUSTUP_HOME=$HOME/.rustup \
+  CARGO_HOME=$HOME/.cargo \
+  PATH=$HOME/.cargo/bin:$PATH:${PATH_MAIN}/node_modules/.bin:$PATH \
   DEBIAN_FRONTEND=noninteractive \
   LANG=C.UTF-8 \
   PROVIDER_API_KEY_GOERLI=${PROVIDER_API_KEY_GOERLI} \
@@ -59,7 +59,7 @@ RUN set -e && \
   rustup override set "nightly-${RUST_NIGHTLY}" && \
   # install wasm target into nightly toolchain
   rustup target add wasm32-unknown-unknown --toolchain "nightly-${RUST_NIGHTLY}" && \
-  . $HOME/cargo/env && \
+  . $HOME/.cargo/env && \
   rustc --version && \
   rustup show && \
   # Node.js and PNPM

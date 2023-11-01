@@ -104,6 +104,13 @@ Lastly follow the [Setup (using Docker)](#docker-setup) instructions to generate
 
 If you make changes then commit them to a branch in your fork, and then create a Pull Request or generate an Issue with any contributions to 'eip-x' branch of the relevant upstream Clawbird repository mentioned above.
 
+Add external repositories as Git Submodules with:
+```
+git submodule add --force <repository_link>
+git submodule init
+git submodule update
+```
+
 ### Roadmap
 
 View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
@@ -217,11 +224,94 @@ View the [project roadmap](https://github.com/orgs/clawbird/projects/2)
   * Note: See axiom-eth/src/bin/AxiomV1.md
 * Example:
   ```
-  cargo run --bin header_chain --release -- --network goerli --start 9744549 --end 9744549 --max-depth 10 --initial-depth 7 --final evm --extra-rounds 1 --calldata --create-contract
-
-  Start:   Generating SNARKs for blocks 9744549 to 9744549, max depth 10, initial depth 7, finality evm
-thread 'main' panicked at '"configs/headers/goerli_7.json" does not exist: Os { code: 2, kind: NotFound, message: "No such file or directory" }', /eip-x/axiom-eth/axiom-eth/src/util/mod.rs:85:37
+  cargo run --bin header_chain --release -- --network goerli --start 9744549 --end 9744549 --max-depth 10 --initial-depth 3 --final evm --extra-rounds 1 --calldata --create-contract
   ```
+
+  * Output:
+  ```
+  Start:   Generating SNARKs for blocks 9744549 to 9744549, max depth 10, initial depth 3, finality evm
+  creating params for 15
+  ··Start:   EthPreCircuit: create_circuit
+  ··End:     EthPreCircuit: create_circuit ...........................................87.820ms
+  Gate Chip | Phase 0: 742440 advice cells , 1778 lookup advice cells
+  Gate Chip | Phase 1: 260460 advice cells , 32 lookup advice cells
+  Total 673 fixed cells
+  RLC Chip | 33605 advice cells
+  ··Start:   Generating vkey & pkey
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  k: 15, extended_k: 17
+  157.010416ms
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  113.045708ms
+  ··End:     Generating vkey & pkey ..................................................3.928s
+  ··Start:   Writing pkey to "data/headers/goerli_3.pk"
+  ··End:     Writing pkey to "data/headers/goerli_3.pk" ..............................639.269ms
+  ··Start:   EthPreCircuit: create_circuit
+  ··End:     EthPreCircuit: create_circuit ...........................................6.522ms
+  ··Start:   Create proof
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  ··End:     Create proof ............................................................11.923s
+  ··Start:   Write SNARK
+  ··End:     Write SNARK .............................................................127.756ms
+  creating params for 21
+  ··Start:   AggregationPreCircuit: create_circuit
+  computing length 90 fixed base msm
+  computing length 239 MSM
+  computing length 90 fixed base msm
+  computing length 239 MSM
+  computing length 1 MSM
+  computing length 1 MSM
+  ··End:     AggregationPreCircuit: create_circuit ...................................4.702s
+  Gate Chip | Phase 0: 75861992 advice cells , 8030881 lookup advice cells
+  Total 684049 fixed cells
+  ··Start:   Generating vkey & pkey
+  k: 21, extended_k: 23
+  Start:   Generating SNARKs for blocks 9744549 to 9744549, max depth 10, initial depth 3, finality evm
+  creating params for 15
+  ··Start:   EthPreCircuit: create_circuit
+  ··End:     EthPreCircuit: create_circuit ...........................................87.820ms
+  Gate Chip | Phase 0: 742440 advice cells , 1778 lookup advice cells
+  Gate Chip | Phase 1: 260460 advice cells , 32 lookup advice cells
+  Total 673 fixed cells
+  RLC Chip | 33605 advice cells
+  ··Start:   Generating vkey & pkey
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  k: 15, extended_k: 17
+  157.010416ms
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  113.045708ms
+  ··End:     Generating vkey & pkey ..................................................3.928s
+  ··Start:   Writing pkey to "data/headers/goerli_3.pk"
+  ··End:     Writing pkey to "data/headers/goerli_3.pk" ..............................639.269ms
+  ··Start:   EthPreCircuit: create_circuit
+  ··End:     EthPreCircuit: create_circuit ...........................................6.522ms
+  ··Start:   Create proof
+  Total Keccak Columns: 65
+  Unusable rows: 59
+  ··End:     Create proof ............................................................11.923s
+  ··Start:   Write SNARK
+  ··End:     Write SNARK .............................................................127.756ms
+  creating params for 21
+  ··Start:   AggregationPreCircuit: create_circuit
+  computing length 90 fixed base msm
+  computing length 239 MSM
+  computing length 90 fixed base msm
+  computing length 239 MSM
+  computing length 1 MSM
+  computing length 1 MSM
+  ··End:     AggregationPreCircuit: create_circuit ...................................4.702s
+  Gate Chip | Phase 0: 75861992 advice cells , 8030881 lookup advice cells
+  Total 684049 fixed cells
+  ··Start:   Generating vkey & pkey
+  k: 21, extended_k: 23
+  ```
+  * Note: Must use an existing file in configs/headers/ folder, such as goerli_3.json, and it refers to a filename with `_3`` in it if provide `--initial-depth 3` via CLI.
+
 
 ### Run Light Client (Helios) <a id="run-light-client"></a>
 
